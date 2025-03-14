@@ -4,10 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Welcome to the Chat App</h1>
-    <p>This is a basic chat application with SQLite as the backend.</p>
-    <p>The database and tables have been set up.</p>
+    <div class="container">
+        <!-- Authentication Section -->
+        <div id="auth-section">
+            <div class="auth-container">
+                <!-- Login Form -->
+                <div id="login-form">
+                    <h2>Login</h2>
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password">
+                    </div>
+                    <button class="btn btn-primary" onclick="login()">Login</button>
+                    <div id="login-error" class="error-message"></div>
+                    <p class="switch-form">
+                        Don't have an account? <a href="#" onclick="toggleForm('register')">Register</a>
+                    </p>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form" style="display: none;">
+                    <h2>Register</h2>
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password">
+                    </div>
+                    <button class="btn btn-primary" onclick="register()">Register</button>
+                    <div id="register-error" class="error-message"></div>
+                    <p class="switch-form">
+                        Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Section -->
+        <div id="chat-section">
+            <div class="header">
+                <h1>Chat App</h1>
+                <div class="action-buttons">
+                    <div class="form-group">
+                        <button class="btn btn-create" onclick="createChatroom()">Create</button>
+                        <input type="text" id="chatroom-name" placeholder="Enter chatroom name">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-join" onclick="joinChatroom()">Join</button>
+                        <input type="text" id="chatroom-id" placeholder="Enter chatroom ID">
+                    </div>
+                    <button class="btn btn-delete" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            
+            <div class="tabs" id="chatroom-tabs"></div>
+            <div class="tab-content" id="tab-content"></div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>

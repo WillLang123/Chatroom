@@ -1,0 +1,276 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.auth-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-secondary {
+    background: #2ecc71;
+    color: white;
+    width: 100%;
+    padding: 10px;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.switch-form {
+    text-align: center;
+    margin-top: 15px;
+    color: #7f8c8d;
+}
+
+.switch-form a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.switch-form a:hover {
+    text-decoration: underline;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-create {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-join {
+    background: #3498db;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.tabs {
+    display: flex;
+    background: #34495e;
+    padding: 0 20px;
+    overflow-x: auto;
+    height: 50px;
+    align-items: center;
+}
+
+.tab {
+    height: 100%;
+    padding: 0 20px;
+    color: white;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.tab .tab-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tab.active {
+    border-bottom-color: #3498db;
+    background: rgba(255,255,255,0.1);
+}
+
+.tab-content {
+    padding: 20px;
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+}
+
+.chat-area {
+    display: none;
+    height: 100%;
+}
+
+.chat-area.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin: 5px 0;
+}
+
+.message.sent {
+    background-color: #3498db;
+    color: white;
+    align-self: flex-end;
+}
+
+.message.received {
+    background-color: #e9ecef;
+    color: #2c3e50;
+    align-self: flex-start;
+}
+
+.message .sender {
+    font-size: 12px;
+    margin-bottom: 5px;
+    opacity: 0.8;
+}
+
+.message .timestamp {
+    font-size: 10px;
+    opacity: 0.7;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    min-width: 0;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    width: 80px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.welcome-message {
+    text-align: center;
+    color: #7f8c8d;
+    margin-top: 50px;
+}
+
+#auth-section {
+    display: block;
+}
+
+#chat-section {
+    display: none;
+} 

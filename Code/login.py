@@ -2,7 +2,6 @@ from flask import session
 from database import getDBConnection
 
 def registerUser(username, password):
-    """Register a new user."""
     if not username or not password:
         return {'status': 'error', 'message': 'Username and password are required'}, 400
     
@@ -15,19 +14,19 @@ def registerUser(username, password):
         if cursor.fetchone():
             return {'status': 'error', 'message': 'Username already exists'}, 400
         
-        # Create user with empty chatroom_ids
-        cursor.execute('INSERT INTO users (username, password, chatroom_ids) VALUES (?, ?, ?)', 
+        # Create user with empty chatroomIDs
+        cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', 
                       (username, password, ''))
         
-        user_id = cursor.lastrowid
+        userID = cursor.lastrowid
         conn.commit()
         
         # Set session
-        session['user_id'] = user_id
+        session['userID'] = userID
         session['username'] = username
         
         return {'status': 'success', 'user': {
-            'id': user_id,
+            'id': userID,
             'username': username
         }}, 200
     
@@ -41,7 +40,6 @@ def registerUser(username, password):
         conn.close()
 
 def loginUser(username, password):
-    """Log in an existing user."""
     if not username or not password:
         return {'status': 'error', 'message': 'Username and password are required'}, 400
     
@@ -61,7 +59,7 @@ def loginUser(username, password):
             return {'status': 'error', 'message': 'Invalid username or password'}, 401
         
         # Set session
-        session['user_id'] = user[0]
+        session['userID'] = user[0]
         session['username'] = user[1]
         
         return {'status': 'success', 'user': {
@@ -78,7 +76,6 @@ def loginUser(username, password):
         conn.close()
 
 def logoutUser():
-    """Log out the current user."""
     try:
         session.clear()
         return {'status': 'success'}, 200
@@ -88,11 +85,10 @@ def logoutUser():
         return {'status': 'error', 'message': 'Failed to log out'}, 500
 
 def checkAuth():
-    """Check if a user is authenticated."""
     try:
-        if 'user_id' in session:
+        if 'userID' in session:
             return {'status': 'success', 'user': {
-                'id': session['user_id'],
+                'id': session['userID'],
                 'username': session['username']
             }}, 200
         return {'status': 'error', 'message': 'Not logged in'}, 401

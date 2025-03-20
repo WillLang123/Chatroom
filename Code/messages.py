@@ -3,18 +3,18 @@ import time
 from flask import Response
 from database import getDBConnection
 
-def createMessageTable(chatroom_id):
+def createMessageTable(chatroomID):
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
         
         cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS messages_{chatroom_id} (
+            CREATE TABLE IF NOT EXISTS messages_{chatroomID} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                userID INTEGER NOT NULL,
                 message TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
+                FOREIGN KEY (userID) REFERENCES users (id)
             )
         ''')
         
@@ -26,19 +26,19 @@ def createMessageTable(chatroom_id):
         cursor.close()
         conn.close()
 
-def getMessages(chatroom_id, limit=50):
+def getMessages(chatroomID, limit=50):
     """Get messages for a chatroom."""
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
         
         # Ensure message table exists
-        createMessageTable(chatroom_id)
+        createMessageTable(chatroomID)
         
         cursor.execute(f'''
-            SELECT m.id, m.user_id, u.username, m.message, m.timestamp 
-            FROM messages_{chatroom_id} m
-            JOIN users u ON m.user_id = u.id
+            SELECT m.id, m.userID, u.username, m.message, m.timestamp 
+            FROM messages_{chatroomID} m
+            JOIN users u ON m.userID = u.id
             ORDER BY m.timestamp DESC
             LIMIT ?
         ''', (limit,))
@@ -47,7 +47,7 @@ def getMessages(chatroom_id, limit=50):
         for row in cursor.fetchall():
             messages.append({
                 'id': row[0],
-                'user_id': row[1],
+                'userID': row[1],
                 'username': row[2],
                 'message': row[3],
                 'timestamp': row[4]
@@ -63,7 +63,7 @@ def getMessages(chatroom_id, limit=50):
         cursor.close()
         conn.close()
 
-def sendMessage(chatroom_id, user_id, message):
+def sendMessage(chatroomID, userID, message):
     """Send a message in a chatroom."""
     if not message or not message.strip():
         return {'status': 'error', 'message': 'Message cannot be empty'}, 400
@@ -73,23 +73,23 @@ def sendMessage(chatroom_id, user_id, message):
         cursor = conn.cursor()
         
         # Ensure message table exists
-        createMessageTable(chatroom_id)
+        createMessageTable(chatroomID)
         
         cursor.execute(f'''
-            INSERT INTO messages_{chatroom_id} (user_id, message)
+            INSERT INTO messages_{chatroomID} (userID, message)
             VALUES (?, ?)
-        ''', (user_id, message.strip()))
+        ''', (userID, message.strip()))
         
-        message_id = cursor.lastrowid
+        messageID = cursor.lastrowid
         
         # Get username for the response
-        cursor.execute('SELECT username FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT username FROM users WHERE id = ?', (userID,))
         username = cursor.fetchone()[0]
         
         conn.commit()
         return {'status': 'success', 'message': {
-            'id': message_id,
-            'user_id': user_id,
+            'id': messageID,
+            'userID': userID,
             'username': username,
             'message': message.strip(),
             'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
@@ -104,7 +104,7 @@ def sendMessage(chatroom_id, user_id, message):
         cursor.close()
         conn.close()
 
-def messageStream(chatroom_id):
+def messageStream(chatroomID):
     """Create an SSE stream for real-time message updates."""
     def generate():
         last_id = 0
@@ -114,12 +114,12 @@ def messageStream(chatroom_id):
                 cursor = conn.cursor()
                 
                 # Ensure message table exists
-                createMessageTable(chatroom_id)
+                createMessageTable(chatroomID)
                 
                 cursor.execute(f'''
-                    SELECT m.id, m.user_id, u.username, m.message, m.timestamp 
-                    FROM messages_{chatroom_id} m
-                    JOIN users u ON m.user_id = u.id
+                    SELECT m.id, m.userID, u.username, m.message, m.timestamp 
+                    FROM messages_{chatroomID} m
+                    JOIN users u ON m.userID = u.id
                     WHERE m.id > ?
                     ORDER BY m.timestamp ASC
                 ''', (last_id,))
@@ -130,7 +130,7 @@ def messageStream(chatroom_id):
                         last_id = message[0]
                         data = {
                             'id': message[0],
-                            'user_id': message[1],
+                            'userID': message[1],
                             'username': message[2],
                             'message': message[3],
                             'timestamp': message[4]

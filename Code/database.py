@@ -15,7 +15,7 @@ def initDB():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                chatroom_ids TEXT DEFAULT NULL
+                chatroomIDs TEXT DEFAULT NULL
             )
         ''')
         
@@ -40,17 +40,17 @@ def initDB():
         cursor.close()
         conn.close()
 
-def createMessageTable(chatroom_id):
+def createMessageTable(chatroomID):
     conn = getDBConnection()
     cursor = conn.cursor()
     try:
         cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS messages_{chatroom_id} (
+            CREATE TABLE IF NOT EXISTS messages_{chatroomID} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                userID INTEGER NOT NULL,
                 message TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
+                FOREIGN KEY (userID) REFERENCES users (id)
             )
         ''')
         conn.commit()
@@ -62,7 +62,6 @@ def createMessageTable(chatroom_id):
         conn.close()
 
 def getUserByUsername(username):
-    """Get user information by username."""
     conn = getDBConnection()
     cursor = conn.cursor()
     try:
@@ -73,37 +72,35 @@ def getUserByUsername(username):
                 'id': user[0],
                 'username': user[1],
                 'password': user[2],
-                'chatroom_ids': user[3]
+                'chatroomIDs': user[3]
             }
         return None
     finally:
         conn.close()
 
-def getUserByID(user_id):
-    """Get user information by ID."""
+def getUserByID(userID):
     conn = getDBConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT * FROM users WHERE id = ?', (userID,))
         user = cursor.fetchone()
         if user:
             return {
                 'id': user[0],
                 'username': user[1],
                 'password': user[2],
-                'chatroom_ids': user[3]
+                'chatroomIDs': user[3]
             }
         return None
     finally:
         conn.close()
 
-def updateUserChatrooms(user_id, chatroom_ids):
-    """Update a user's chatroom list."""
+def updateUserChatrooms(userID, chatroomIDs):
     conn = getDBConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute('UPDATE users SET chatroom_ids = ? WHERE id = ?',
-                      (json.dumps(chatroom_ids), user_id))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?',
+                      (json.dumps(chatroomIDs), userID))
         conn.commit()
     finally:
         conn.close() 

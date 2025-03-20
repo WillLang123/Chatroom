@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request, session, Response
 import secrets
 
 from database import initDB
-from auth import registerUser, loginUser, logoutUser, checkAuth
+from Chatroom.Code.login import registerUser, loginUser, logoutUser, checkAuth
 from chatroom import (
     getUserChatrooms,
     createChatroom,
@@ -30,99 +30,99 @@ def initializeDatabase():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    response, status_code = registerUser(data.get('username'), data.get('password'))
-    return jsonify(response), status_code
+    response, status = registerUser(data.get('username'), data.get('password'))
+    return jsonify(response), status
 
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    response, status_code = loginUser(data.get('username'), data.get('password'))
-    return jsonify(response), status_code
+    response, status = loginUser(data.get('username'), data.get('password'))
+    return jsonify(response), status
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    response, status_code = logoutUser()
-    return jsonify(response), status_code
+    response, status = logoutUser()
+    return jsonify(response), status
 
 @app.route('/check_auth', methods=['GET'])
 def checkAuthentication():
-    response, status_code = checkAuth()
-    return jsonify(response), status_code
+    response, status = checkAuth()
+    return jsonify(response), status
 
 # Chatroom routes
 @app.route('/chatrooms', methods=['GET'])
 def getChatrooms():
-    if 'user_id' not in session:
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
-    response, status_code = getUserChatrooms(session['user_id'])
-    return jsonify(response), status_code
+    response, status = getUserChatrooms(session['userID'])
+    return jsonify(response), status
 
 @app.route('/create_chatroom', methods=['POST'])
 def handleCreateChatroom():
-    if 'user_id' not in session:
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
     data = request.get_json()
-    response, status_code = createChatroom(data.get('name'), session['user_id'])
-    return jsonify(response), status_code
+    response, status = createChatroom(data.get('name'), session['userID'])
+    return jsonify(response), status
 
 @app.route('/join_chatroom', methods=['POST'])
 def handleJoinChatroom():
-    if 'user_id' not in session:
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
     data = request.get_json()
-    response, status_code = joinChatroom(data.get('chatroom_id'), session['user_id'])
-    return jsonify(response), status_code
+    response, status = joinChatroom(data.get('chatroomID'), session['userID'])
+    return jsonify(response), status
 
-@app.route('/delete_chatroom/<int:chatroom_id>', methods=['DELETE'])
-def handleDeleteChatroom(chatroom_id):
-    if 'user_id' not in session:
+@app.route('/delete_chatroom/<int:chatroomID>', methods=['DELETE'])
+def handleDeleteChatroom(chatroomID):
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
-    response, status_code = deleteChatroom(chatroom_id, session['user_id'])
-    return jsonify(response), status_code
+    response, status = deleteChatroom(chatroomID, session['userID'])
+    return jsonify(response), status
 
 # Message routes
-@app.route('/chatroom/<int:chatroom_id>/messages')
-def getChatroomMessages(chatroom_id):
-    if 'user_id' not in session:
+@app.route('/chatroom/<int:chatroomID>/messages')
+def getChatroomMessages(chatroomID):
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
     # Check if user is in the chatroom
-    chatroom = getChatroomByID(chatroom_id)
-    if not chatroom or session['user_id'] not in chatroom['users']:
+    chatroom = getChatroomByID(chatroomID)
+    if not chatroom or session['userID'] not in chatroom['users']:
         return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
     
-    messages = getMessages(chatroom_id)
+    messages = getMessages(chatroomID)
     return jsonify({'status': 'success', 'messages': messages}), 200
 
-@app.route('/chatroom/<int:chatroom_id>/send', methods=['POST'])
-def handleSendMessage(chatroom_id):
-    if 'user_id' not in session:
+@app.route('/chatroom/<int:chatroomID>/send', methods=['POST'])
+def handleSendMessage(chatroomID):
+    if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     
     # Check if user is in the chatroom
-    chatroom = getChatroomByID(chatroom_id)
-    if not chatroom or session['user_id'] not in chatroom['users']:
+    chatroom = getChatroomByID(chatroomID)
+    if not chatroom or session['userID'] not in chatroom['users']:
         return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
     
     data = request.get_json()
-    response, status_code = sendMessage(chatroom_id, session['user_id'], data.get('message'))
-    return jsonify(response), status_code
+    response, status = sendMessage(chatroomID, session['userID'], data.get('message'))
+    return jsonify(response), status
 
-@app.route('/chatroom/<int:chatroom_id>/stream')
-def streamMessages(chatroom_id):
-    if 'user_id' not in session:
+@app.route('/chatroom/<int:chatroomID>/stream')
+def streamMessages(chatroomID):
+    if 'userID' not in session:
         return 'Not logged in', 401
     
     # Check if user is in the chatroom
-    chatroom = getChatroomByID(chatroom_id)
-    if not chatroom or session['user_id'] not in chatroom['users']:
+    chatroom = getChatroomByID(chatroomID)
+    if not chatroom or session['userID'] not in chatroom['users']:
         return 'Not authorized', 403
     
-    return messageStream(chatroom_id)
+    return messageStream(chatroomID)
 
 if __name__ == '__main__':
     initDB()

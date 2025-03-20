@@ -150,7 +150,7 @@ async function joinChatroom() {
         const response = await fetch('/join_chatroom', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chatroom_id: parseInt(id) })
+            body: JSON.stringify({ chatroomID: parseInt(id) })
         });
         
         const data = await response.json();
@@ -486,7 +486,7 @@ function appendMessage(chatroomId, message) {
     }
     
     const messageElement = document.createElement('div');
-    messageElement.className = `message ${message.user_id === currentUserId ? 'sent' : 'received'}`;
+    messageElement.className = `message ${message.userID === currentUserId ? 'sent' : 'received'}`;
     
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `

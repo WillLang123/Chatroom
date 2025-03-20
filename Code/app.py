@@ -3,13 +3,7 @@ import secrets
 
 from database import initDB
 from Chatroom.Code.login import registerUser, loginUser, logoutUser, checkAuth
-from chatroom import (
-    getUserChatrooms,
-    createChatroom,
-    joinChatroom,
-    deleteChatroom,
-    getChatroomByID
-)
+from chatroom import getUserChatrooms, createChatroom, joinChatroom, deleteChatroom, getChatroomByID
 from messages import getMessages, sendMessage, messageStream
 
 app = Flask(__name__, static_folder='static')

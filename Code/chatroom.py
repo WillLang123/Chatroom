@@ -36,7 +36,7 @@ def getUserChatrooms(userID):
         chatroomIDs = [int(id) for id in result[0].split(',')]
         chatrooms = []
         for chatroomID in chatroomIDs:
-            cursor.execute('SELECT id, name, admin_id FROM chatrooms WHERE id = ?', (chatroomID,))
+            cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
             chatroom = cursor.fetchone()
             if chatroom:
                 chatrooms.append({
@@ -62,7 +62,6 @@ def createChatroom(name, userID):
         chatroomID = cursor.lastrowid
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (userID,))
         result = cursor.fetchone()
-        #humanize
         chatroomIDs = result[0].split(',') if result[0] else []
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), userID))
@@ -138,8 +137,12 @@ def deleteChatroom(chatroomID, userID):
                 if str(chatroomID) in chatroomIDs:
                     chatroomIDs.remove(str(chatroomID))
                     newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
-                    cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (newChatroomIDs, user[0]))
-        cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')
+                    cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', 
+                                 (newChatroomIDs, user[0]))
+        try:
+            cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')
+        except Exception as e:
+            print(f"Error dropping message table: {str(e)}")
         cursor.execute('DELETE FROM chatrooms WHERE id = ?', (chatroomID,))
         cursor.execute('COMMIT')
         return {'status': 'success'}, 200

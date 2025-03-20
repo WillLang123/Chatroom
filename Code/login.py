@@ -15,10 +15,7 @@ def registerUser(username, password):
         conn.commit()
         session['userID'] = userID
         session['username'] = username
-        return {'status': 'success', 'user': {
-            'id': userID,
-            'username': username
-        }}, 200
+        return {'status': 'success', 'user': {'id': userID, 'username': username}}, 200
     except Exception as e:
         print(f"Error registering user: {str(e)}")
         conn.rollback()
@@ -33,7 +30,7 @@ def loginUser(username, password):
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username))
+        cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         if not user:
             return {'status': 'error', 'message': 'Invalid username or password'}, 401
@@ -41,10 +38,7 @@ def loginUser(username, password):
             return {'status': 'error', 'message': 'Invalid username or password'}, 401
         session['userID'] = user[0]
         session['username'] = user[1]
-        return {'status': 'success', 'user': {
-            'id': user[0],
-            'username': user[1]
-        }}, 200
+        return {'status': 'success', 'user': {'id': user[0], 'username': user[1]}}, 200
     except Exception as e:
         print(f"Error logging in user: {str(e)}")
         return {'status': 'error', 'message': 'Failed to log in'}, 500
@@ -63,10 +57,7 @@ def logoutUser():
 def checkAuth():
     try:
         if 'userID' in session:
-            return {'status': 'success', 'user': {
-                'id': session['userID'],
-                'username': session['username']
-            }}, 200
+            return {'status': 'success', 'user': {'id': session['userID'], 'username': session['username']}}, 200
         return {'status': 'error', 'message': 'Not logged in'}, 401
     except Exception as e:
         print(f"Error checking auth: {str(e)}")

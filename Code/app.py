@@ -1,7 +1,7 @@
 from flask import Flask, render_template, jsonify, request, session, Response
 import secrets
 from database import initDB
-from Chatroom.Code.login import registerUser, loginUser, logoutUser, checkAuth
+from login import registerUser, loginUser, logoutUser, checkAuth
 from chatroom import getUserChatrooms, createChatroom, joinChatroom, deleteChatroom, getChatroomByID
 from messages import getMessages, sendMessage, messageStream
 

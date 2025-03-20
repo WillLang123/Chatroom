@@ -1,28 +1,7 @@
 import json
 import time
 from flask import Response
-from database import getDBConnection
-
-def createMessageTable(chatroomID):
-    try:
-        conn = getDBConnection()
-        cursor = conn.cursor()
-        cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS messages_{chatroomID} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                userID INTEGER NOT NULL,
-                message TEXT NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (userID) REFERENCES users (id)
-            )
-        ''')
-        conn.commit()
-    except Exception as e:
-        print(f"Error creating message table: {str(e)}")
-        conn.rollback()
-    finally:
-        cursor.close()
-        conn.close()
+from database import getDBConnection, createMessageTable
 
 def getMessages(chatroomID, limit=50):
     try:
@@ -45,7 +24,7 @@ def getMessages(chatroomID, limit=50):
                 'message': row[3],
                 'timestamp': row[4]
             })
-        return messages[::-1]  # Reverse to get chronological order
+        return messages[::-1]
     except Exception as e:
         print(f"Error getting messages: {str(e)}")
         return []

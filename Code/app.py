@@ -35,7 +35,7 @@ def logout():
     return jsonify(response), status
 
 @app.route('/checkLogin', methods=['GET'])
-def checkAuthentication():
+def checkLogin():
     response, status = checkAuth()
     return jsonify(response), status
 

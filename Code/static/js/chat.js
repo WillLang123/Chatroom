@@ -84,7 +84,7 @@ async function logout() {
     }
 }
 
-async function checkAuth() {
+async function checkLogin() {
     try {
         const response = await fetch('/checkLogin');
         const data = await response.json();
@@ -380,4 +380,4 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-document.addEventListener('DOMContentLoaded', checkAuth);
+document.addEventListener('DOMContentLoaded', checkLogin);

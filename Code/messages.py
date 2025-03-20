@@ -107,7 +107,7 @@ def sendMessage(chatroomID, userID, message):
 def messageStream(chatroomID):
     """Create an SSE stream for real-time message updates."""
     def generate():
-        last_id = 0
+        lastID = 0
         while True:
             try:
                 conn = getDBConnection()
@@ -122,12 +122,12 @@ def messageStream(chatroomID):
                     JOIN users u ON m.userID = u.id
                     WHERE m.id > ?
                     ORDER BY m.timestamp ASC
-                ''', (last_id,))
+                ''', (lastID,))
                 
                 messages = cursor.fetchall()
                 if messages:
                     for message in messages:
-                        last_id = message[0]
+                        lastID = message[0]
                         data = {
                             'id': message[0],
                             'userID': message[1],

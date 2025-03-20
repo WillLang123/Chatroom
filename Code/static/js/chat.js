@@ -102,7 +102,7 @@ async function logout() {
 
 async function checkAuth() {
     try {
-        const response = await fetch('/check_auth');
+        const response = await fetch('/checkLogin');
         const data = await response.json();
         
         if (data.status === 'success' && data.authenticated) {
@@ -123,7 +123,7 @@ async function createChatroom() {
     if (!name) return;
     
     try {
-        const response = await fetch('/create_chatroom', {
+        const response = await fetch('/createChatroom', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
@@ -147,7 +147,7 @@ async function joinChatroom() {
     if (!id) return;
     
     try {
-        const response = await fetch('/join_chatroom', {
+        const response = await fetch('/joinChatroom', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chatroomID: parseInt(id) })
@@ -193,7 +193,7 @@ async function deleteChatroom(chatroomId) {
             deleteButton.style.opacity = '0.5';
         }
         
-        const response = await fetch(`/delete_chatroom/${chatroomId}`, {
+        const response = await fetch(`/deleteChatroom/${chatroomId}`, {
             method: 'DELETE'
         });
         

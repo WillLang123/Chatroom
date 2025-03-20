@@ -8,7 +8,7 @@ def getChatroomByID(chatroomID):
         cursor = conn.cursor()
         
         # Get chatroom details
-        cursor.execute('SELECT id, name, admin_id FROM chatrooms WHERE id = ?', (chatroomID,))
+        cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
         if not chatroom:
             return None
@@ -20,7 +20,7 @@ def getChatroomByID(chatroomID):
         return {
             'id': chatroom[0],
             'name': chatroom[1],
-            'admin_id': chatroom[2],
+            'adminID': chatroom[2],
             'users': users
         }
     
@@ -76,7 +76,7 @@ def createChatroom(name, userID):
         cursor = conn.cursor()
         
         # Create chatroom
-        cursor.execute('INSERT INTO chatrooms (name, admin_id) VALUES (?, ?)', (name, userID))
+        cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, userID))
         chatroomID = cursor.lastrowid
         
         # Add chatroom to user's list
@@ -123,7 +123,7 @@ def joinChatroom(chatroomID, userID):
         cursor = conn.cursor()
         
         # Check if chatroom exists
-        cursor.execute('SELECT name, admin_id FROM chatrooms WHERE id = ?', (chatroomID,))
+        cursor.execute('SELECT name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
         if not chatroom:
             return {'status': 'error', 'message': 'Chatroom not found'}, 404
@@ -165,7 +165,7 @@ def deleteChatroom(chatroomID, userID):
         cursor.execute('BEGIN TRANSACTION')
         
         # Check if chatroom exists and user is admin
-        cursor.execute('SELECT admin_id FROM chatrooms WHERE id = ?', (chatroomID,))
+        cursor.execute('SELECT adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         result = cursor.fetchone()
         if not result:
             return {'status': 'error', 'message': 'Chatroom not found'}, 404
@@ -182,9 +182,9 @@ def deleteChatroom(chatroomID, userID):
                 chatroomIDs = user[1].split(',')
                 if str(chatroomID) in chatroomIDs:
                     chatroomIDs.remove(str(chatroomID))
-                    new_chatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
+                    newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
                     cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', 
-                                 (new_chatroomIDs, user[0]))
+                                 (newChatroomIDs, user[0]))
         
         # Drop messages table and delete chatroom
         cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')

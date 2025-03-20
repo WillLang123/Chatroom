@@ -15,10 +15,11 @@ def index():
     return render_template('index.html')
 
 # Route to initialize the database and tables
-@app.route('/init_db')
+@app.route('/initDB')
 def initializeDatabase():
     initDB()
-    return jsonify({'status': 'success', 'message': 'Database initialized successfully'})
+    #debug
+    return jsonify({'status': 'success', 'message': 'Database made successfully'})
 
 # Authentication routes
 @app.route('/register', methods=['POST'])
@@ -38,7 +39,7 @@ def logout():
     response, status = logoutUser()
     return jsonify(response), status
 
-@app.route('/check_auth', methods=['GET'])
+@app.route('/checkLogin', methods=['GET'])
 def checkAuthentication():
     response, status = checkAuth()
     return jsonify(response), status
@@ -52,7 +53,7 @@ def getChatrooms():
     response, status = getUserChatrooms(session['userID'])
     return jsonify(response), status
 
-@app.route('/create_chatroom', methods=['POST'])
+@app.route('/createChatroom', methods=['POST'])
 def handleCreateChatroom():
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
@@ -61,7 +62,7 @@ def handleCreateChatroom():
     response, status = createChatroom(data.get('name'), session['userID'])
     return jsonify(response), status
 
-@app.route('/join_chatroom', methods=['POST'])
+@app.route('/joinChatroom', methods=['POST'])
 def handleJoinChatroom():
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
@@ -70,7 +71,7 @@ def handleJoinChatroom():
     response, status = joinChatroom(data.get('chatroomID'), session['userID'])
     return jsonify(response), status
 
-@app.route('/delete_chatroom/<int:chatroomID>', methods=['DELETE'])
+@app.route('/deleteChatroom/<int:chatroomID>', methods=['DELETE'])
 def handleDeleteChatroom(chatroomID):
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401

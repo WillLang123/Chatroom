@@ -1,6 +1,5 @@
-import json
-from flask import session
 from database import getDBConnection
+from flask import session
 
 def getChatroomByID(chatroomID):
     try:

@@ -7,9 +7,7 @@ def getDBConnection():
 def initDB():
     conn = getDBConnection()
     cursor = conn.cursor()
-    
     try:
-        # Create users table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,8 +16,6 @@ def initDB():
                 chatroomIDs TEXT DEFAULT NULL
             )
         ''')
-        
-        # Create chatrooms table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS chatrooms (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,14 +24,11 @@ def initDB():
                 FOREIGN KEY (adminID) REFERENCES users (id)
             )
         ''')
-        
         conn.commit()
         print("Database initialized successfully")
-    
     except Exception as e:
         print(f"Error initializing database: {str(e)}")
         conn.rollback()
-    
     finally:
         cursor.close()
         conn.close()
@@ -99,8 +92,7 @@ def updateUserChatrooms(userID, chatroomIDs):
     conn = getDBConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?',
-                      (json.dumps(chatroomIDs), userID))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?',(json.dumps(chatroomIDs), userID))
         conn.commit()
     finally:
         conn.close() 

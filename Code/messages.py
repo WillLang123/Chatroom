@@ -7,7 +7,6 @@ def createMessageTable(chatroomID):
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
-        
         cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS messages_{chatroomID} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +16,6 @@ def createMessageTable(chatroomID):
                 FOREIGN KEY (userID) REFERENCES users (id)
             )
         ''')
-        
         conn.commit()
     except Exception as e:
         print(f"Error creating message table: {str(e)}")
@@ -27,14 +25,10 @@ def createMessageTable(chatroomID):
         conn.close()
 
 def getMessages(chatroomID, limit=50):
-    """Get messages for a chatroom."""
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
-        
-        # Ensure message table exists
         createMessageTable(chatroomID)
-        
         cursor.execute(f'''
             SELECT m.id, m.userID, u.username, m.message, m.timestamp 
             FROM messages_{chatroomID} m
@@ -42,7 +36,6 @@ def getMessages(chatroomID, limit=50):
             ORDER BY m.timestamp DESC
             LIMIT ?
         ''', (limit,))
-        
         messages = []
         for row in cursor.fetchall():
             messages.append({
@@ -52,40 +45,28 @@ def getMessages(chatroomID, limit=50):
                 'message': row[3],
                 'timestamp': row[4]
             })
-        
         return messages[::-1]  # Reverse to get chronological order
-    
     except Exception as e:
         print(f"Error getting messages: {str(e)}")
         return []
-    
     finally:
         cursor.close()
         conn.close()
 
 def sendMessage(chatroomID, userID, message):
-    """Send a message in a chatroom."""
     if not message or not message.strip():
         return {'status': 'error', 'message': 'Message cannot be empty'}, 400
-    
     try:
         conn = getDBConnection()
         cursor = conn.cursor()
-        
-        # Ensure message table exists
         createMessageTable(chatroomID)
-        
         cursor.execute(f'''
             INSERT INTO messages_{chatroomID} (userID, message)
             VALUES (?, ?)
         ''', (userID, message.strip()))
-        
         messageID = cursor.lastrowid
-        
-        # Get username for the response
         cursor.execute('SELECT username FROM users WHERE id = ?', (userID,))
         username = cursor.fetchone()[0]
-        
         conn.commit()
         return {'status': 'success', 'message': {
             'id': messageID,
@@ -94,28 +75,22 @@ def sendMessage(chatroomID, userID, message):
             'message': message.strip(),
             'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
         }}, 200
-    
     except Exception as e:
         print(f"Error sending message: {str(e)}")
         conn.rollback()
         return {'status': 'error', 'message': 'Failed to send message'}, 500
-    
     finally:
         cursor.close()
         conn.close()
 
 def messageStream(chatroomID):
-    """Create an SSE stream for real-time message updates."""
     def generate():
         lastID = 0
         while True:
             try:
                 conn = getDBConnection()
                 cursor = conn.cursor()
-                
-                # Ensure message table exists
                 createMessageTable(chatroomID)
-                
                 cursor.execute(f'''
                     SELECT m.id, m.userID, u.username, m.message, m.timestamp 
                     FROM messages_{chatroomID} m
@@ -123,7 +98,6 @@ def messageStream(chatroomID):
                     WHERE m.id > ?
                     ORDER BY m.timestamp ASC
                 ''', (lastID,))
-                
                 messages = cursor.fetchall()
                 if messages:
                     for message in messages:
@@ -136,15 +110,11 @@ def messageStream(chatroomID):
                             'timestamp': message[4]
                         }
                         yield f"data: {json.dumps(data)}\n\n"
-            
             except Exception as e:
                 print(f"Error in message stream: {str(e)}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
-            
             finally:
                 cursor.close()
                 conn.close()
-            
-            time.sleep(1)  # Poll every second
-    
+            time.sleep(1)
     return Response(generate(), mimetype='text/event-stream') 

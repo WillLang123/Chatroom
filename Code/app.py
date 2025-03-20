@@ -5,17 +5,13 @@ from login import registerUser, loginUser, logoutUser, checkAuth
 from chatroom import getUserChatrooms, createChatroom, joinChatroom, deleteChatroom, getChatroomByID
 from messages import getMessages, sendMessage, messageStream
 
+#Todo simplify database, functions in other files, overall audit code
 app = Flask(__name__, static_folder='static')
 app.secret_key = secrets.token_hex(32)  # for session management
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/initDB')
-def initializeDatabase():
-    initDB()
-    return jsonify({'status': 'success', 'message': 'Database made successfully'})
 
 @app.route('/register', methods=['POST'])
 def register():

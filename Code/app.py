@@ -2,8 +2,8 @@ from flask import Flask, render_template, jsonify, request, session, Response
 import secrets
 import json
 import time
-from database import initDB, getDBConnection, createMessageTable
-from chatroom import createChatroom, joinChatroom, deleteChatroom, getChatroomByID
+import sqlite3
+from utils import getDBConnection, createMessageTable, getChatroomByID
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = secrets.token_hex(32)
@@ -117,23 +117,99 @@ def handleCreateChatroom():
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     data = request.get_json()
-    response, status = createChatroom(data.get('name'), session['userID'])
-    return jsonify(response), status
+    name = data.get('name')
+    if not name:
+        return jsonify({'status': 'error', 'message': 'Chatroom name is required'}), 400
+    try:
+        conn = getDBConnection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, session['userID']))
+        chatroomID = cursor.lastrowid
+        cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
+        result = cursor.fetchone()
+        chatroomIDs = result[0].split(',') if result[0] else []
+        chatroomIDs.append(str(chatroomID))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+        conn.commit()
+        return jsonify({'status': 'success', 'chatroom': {'id': chatroomID,'name': name,'isAdmin': True}}), 200
+    except Exception as e:
+        print(f"Error creating chatroom: {str(e)}")
+        conn.rollback()
+        return jsonify({'status': 'error', 'message': 'Failed to create chatroom'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/joinChatroom', methods=['POST'])
 def handleJoinChatroom():
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     data = request.get_json()
-    response, status = joinChatroom(data.get('chatroomID'), session['userID'])
-    return jsonify(response), status
+    chatroomID = data.get('chatroomID')
+    if not chatroomID:
+        return jsonify({'status': 'error', 'message': 'Chatroom ID is required'}), 400
+    try:
+        conn = getDBConnection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
+        chatroom = cursor.fetchone()
+        if not chatroom:
+            return jsonify({'status': 'error', 'message': 'Chatroom not found'}), 404
+        cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
+        result = cursor.fetchone()
+        chatroomIDs = result[0].split(',') if result[0] else []
+        if str(chatroomID) in chatroomIDs:
+            return jsonify({'status': 'error', 'message': 'Already in chatroom'}), 400
+        chatroomIDs.append(str(chatroomID))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
+        conn.commit()
+        return jsonify({'status': 'success', 'chatroom': {'id': chatroomID,'name': chatroom[0],'isAdmin': chatroom[1] == session['userID']}}), 200
+    except Exception as e:
+        print(f"Error joining chatroom: {str(e)}")
+        conn.rollback()
+        return jsonify({'status': 'error', 'message': 'Failed to join chatroom'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/deleteChatroom/<int:chatroomID>', methods=['DELETE'])
 def handleDeleteChatroom(chatroomID):
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
-    response, status = deleteChatroom(chatroomID, session['userID'])
-    return jsonify(response), status
+    try:
+        conn = getDBConnection()
+        cursor = conn.cursor()
+        cursor.execute('BEGIN TRANSACTION')
+        cursor.execute('SELECT adminID FROM chatrooms WHERE id = ?', (chatroomID,))
+        result = cursor.fetchone()
+        if not result:
+            return jsonify({'status': 'error', 'message': 'Chatroom not found'}), 404
+        if result[0] != session['userID']:
+            return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+        cursor.execute('SELECT id, chatroomIDs FROM users')
+        users = cursor.fetchall()
+        for user in users:
+            if user[1]:
+                chatroomIDs = user[1].split(',')
+                if str(chatroomID) in chatroomIDs:
+                    chatroomIDs.remove(str(chatroomID))
+                    newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
+                    cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (newChatroomIDs, user[0]))
+        try:
+            cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')
+        except Exception as e:
+            print(f"Error dropping message table: {str(e)}")
+        cursor.execute('DELETE FROM chatrooms WHERE id = ?', (chatroomID,))
+        cursor.execute('COMMIT')
+        return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        print(f"Error deleting chatroom: {str(e)}")
+        cursor.execute('ROLLBACK')
+        return jsonify({'status': 'error', 'message': 'Failed to delete chatroom'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/chatroom/<int:chatroomID>/messages')
 def getChatroomMessages(chatroomID):
@@ -236,5 +312,17 @@ def streamMessages(chatroomID):
     return Response(generate(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-    initDB()
+    conn = getDBConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS chatrooms (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,adminID INTEGER NOT NULL,FOREIGN KEY (adminID) REFERENCES users (id))''')
+        conn.commit()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"Error initializing database: {str(e)}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
     app.run(host='0.0.0.0', port=3000, debug=True)

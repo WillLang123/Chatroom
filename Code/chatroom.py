@@ -25,33 +25,6 @@ def getChatroomByID(chatroomID):
         cursor.close()
         conn.close()
 
-def getUserChatrooms(userID):
-    try:
-        conn = getDBConnection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (userID,))
-        result = cursor.fetchone()
-        if not result or not result[0]:
-            return {'status': 'success', 'chatrooms': []}, 200
-        chatroomIDs = [int(id) for id in result[0].split(',')]
-        chatrooms = []
-        for chatroomID in chatroomIDs:
-            cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
-            chatroom = cursor.fetchone()
-            if chatroom:
-                chatrooms.append({
-                    'id': chatroom[0],
-                    'name': chatroom[1],
-                    'isAdmin': chatroom[2] == userID
-                })
-        return {'status': 'success', 'chatrooms': chatrooms}, 200
-    except Exception as e:
-        print(f"Error getting user chatrooms: {str(e)}")
-        return {'status': 'error', 'message': 'Failed to get chatrooms'}, 500
-    finally:
-        cursor.close()
-        conn.close()
-
 def createChatroom(name, userID):
     if not name:
         return {'status': 'error', 'message': 'Chatroom name is required'}, 400
@@ -65,20 +38,9 @@ def createChatroom(name, userID):
         chatroomIDs = result[0].split(',') if result[0] else []
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), userID))
-        cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS messages_{chatroomID} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                userID INTEGER NOT NULL,
-                message TEXT NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
         conn.commit()
-        return {'status': 'success', 'chatroom': {
-            'id': chatroomID,
-            'name': name,
-            'isAdmin': True
-        }}, 200
+        return {'status': 'success', 'chatroom': {'id': chatroomID,'name': name,'isAdmin': True}}, 200
     except Exception as e:
         print(f"Error creating chatroom: {str(e)}")
         conn.rollback()
@@ -105,11 +67,7 @@ def joinChatroom(chatroomID, userID):
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), userID))
         conn.commit()
-        return {'status': 'success', 'chatroom': {
-            'id': chatroomID,
-            'name': chatroom[0],
-            'isAdmin': chatroom[1] == userID
-        }}, 200
+        return {'status': 'success', 'chatroom': {'id': chatroomID,'name': chatroom[0],'isAdmin': chatroom[1] == userID}}, 200
     except Exception as e:
         print(f"Error joining chatroom: {str(e)}")
         conn.rollback()
@@ -137,8 +95,7 @@ def deleteChatroom(chatroomID, userID):
                 if str(chatroomID) in chatroomIDs:
                     chatroomIDs.remove(str(chatroomID))
                     newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
-                    cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', 
-                                 (newChatroomIDs, user[0]))
+                    cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (newChatroomIDs, user[0]))
         try:
             cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')
         except Exception as e:

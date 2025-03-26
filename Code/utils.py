@@ -1,10 +1,7 @@
 import sqlite3
 
-def getDBConnection():
-    return sqlite3.connect('chatroom.db')
-
 def createMessageTable(chatroomID):
-    conn = getDBConnection()
+    conn = sqlite3.connect('chatroom.db')
     cursor = conn.cursor()
     try:
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (userID) REFERENCES users (id))''')
@@ -18,7 +15,7 @@ def createMessageTable(chatroomID):
 
 def getChatroomByID(chatroomID):
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()

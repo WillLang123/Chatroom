@@ -3,7 +3,7 @@ import secrets
 import json
 import time
 import sqlite3
-from utils import getDBConnection, createMessageTable, getChatroomByID
+from utils import createMessageTable, getChatroomByID
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = secrets.token_hex(32)
@@ -19,7 +19,7 @@ def register():
     if not username or not password:
         return jsonify({'status': 'error', 'message': 'Username and password are required'}), 400
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
         if cursor.fetchone():
@@ -45,7 +45,7 @@ def login():
     if not username or not password:
         return jsonify({'status': 'error', 'message': 'Username and password are required'}), 400
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
@@ -87,7 +87,7 @@ def getChatrooms():
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
@@ -121,7 +121,7 @@ def handleCreateChatroom():
     if not name:
         return jsonify({'status': 'error', 'message': 'Chatroom name is required'}), 400
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, session['userID']))
         chatroomID = cursor.lastrowid
@@ -150,7 +150,7 @@ def handleJoinChatroom():
     if not chatroomID:
         return jsonify({'status': 'error', 'message': 'Chatroom ID is required'}), 400
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
@@ -178,7 +178,7 @@ def handleDeleteChatroom(chatroomID):
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('BEGIN TRANSACTION')
         cursor.execute('SELECT adminID FROM chatrooms WHERE id = ?', (chatroomID,))
@@ -219,7 +219,7 @@ def getChatroomMessages(chatroomID):
     if not chatroom or session['userID'] not in chatroom['users']:
         return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         createMessageTable(chatroomID)
         cursor.execute(f'''SELECT m.id, m.userID, u.username, m.message, m.timestamp FROM messages_{chatroomID} m JOIN users u ON m.userID = u.id ORDER BY m.timestamp DESC LIMIT 50''')
@@ -252,7 +252,7 @@ def handleSendMessage(chatroomID):
     if not message or not message.strip():
         return jsonify({'status': 'error', 'message': 'Message cannot be empty'}), 400
     try:
-        conn = getDBConnection()
+        conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         createMessageTable(chatroomID)
         cursor.execute(f'''INSERT INTO messages_{chatroomID} (userID, message) VALUES (?, ?)''', (session['userID'], message.strip()))
@@ -286,7 +286,7 @@ def streamMessages(chatroomID):
         lastID = 0
         while True:
             try:
-                conn = getDBConnection()
+                conn = sqlite3.connect('chatroom.db')
                 cursor = conn.cursor()
                 createMessageTable(chatroomID)
                 cursor.execute(f'''SELECT m.id, m.userID, u.username, m.message, m.timestamp FROM messages_{chatroomID} m JOIN users u ON m.userID = u.id WHERE m.id > ? ORDER BY m.timestamp ASC''', (lastID,))
@@ -312,7 +312,7 @@ def streamMessages(chatroomID):
     return Response(generate(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-    conn = getDBConnection()
+    conn = sqlite3.connect('chatroom.db')
     cursor = conn.cursor()
     try:
         cursor.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)''')

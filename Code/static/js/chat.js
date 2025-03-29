@@ -145,25 +145,35 @@ async function joinChatroom() {
 }
 
 async function deleteChatroom(chatroomId) {
+    // Check if chatroom is already being deleted
     if (deleteInProgress.has(chatroomId)) return;
+    //Creates confirm option before it does so
     if (!confirm('Are you sure you want to delete this chatroom?')) return;
     try {
+        //add chatroomID in TODO delete list
         deleteInProgress.add(chatroomId);
+        //Close the message stream about it and delete it
         if (messageStreams[chatroomId]) {
             messageStreams[chatroomId].close();
             delete messageStreams[chatroomId];
         }
+        //disables delete button for that specific chatroom tab
         const deleteButton = document.querySelector(`#chatroom-tabs .tab[data-chatroom-id="${chatroomId}"] .btn-delete`);
         if (deleteButton) {
             deleteButton.disabled = true;
             deleteButton.style.opacity = '0.5';
         }
+        //Calls server using curl to delete that chatroom
         const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: 'DELETE' });
         const data = await response.json();
+        //figures out if it worked
         if (data.status === 'success') {
             const tab = document.querySelector(`.tab[data-chatroom-id="${chatroomId}"]`);
             const chatArea = document.getElementById(`chat-${chatroomId}`);
+            //removes elements about that chatroom
             if (tab) {
+                //it begins to make tabs for next or previous chatroom to become its next and previous tabs
+                //  for the chatroom that got deleted
                 if (tab.classList.contains('active')) {
                     const nextTab = tab.nextElementSibling || tab.previousElementSibling;
                     if (nextTab) {
@@ -173,6 +183,7 @@ async function deleteChatroom(chatroomId) {
                 }
                 tab.remove();
             }
+            //deletes tabs and chatarea about that chatroom and shows home page if there are no more tabs left
             if (chatArea) chatArea.remove();
             const tabs = document.querySelectorAll('.tab');
             if (tabs.length === 0) {
@@ -186,9 +197,11 @@ async function deleteChatroom(chatroomId) {
             alert(data.message || 'Failed to delete chatroom');
         }
     } catch (error) {
+        //shows error if there was a problem
         console.error('Error deleting chatroom:', error);
         alert('Failed to delete chatroom. Please try again.');
     } finally {
+        //removes chatroom from delete list and makes delete button work again in that area
         deleteInProgress.delete(chatroomId);
         const deleteButton = document.querySelector(`#chatroom-tabs .tab[data-chatroom-id="${chatroomId}"] .btn-delete`);
         if (deleteButton) {
@@ -220,6 +233,7 @@ async function loadChatrooms() {
             tab.className = `tab ${index === 0 ? 'active' : ''}`;
             tab.setAttribute('data-chatroom-id', chatroom.id);
             tab.onclick = () => switchTab(chatroom.id);
+            //Renders tab for each classroom with delete button and chatroom id for invites
             tab.innerHTML = `
                 <div class="tab-content" style="display: flex; align-items: center; gap: 10px;">
                     <span>${chatroom.name}</span>

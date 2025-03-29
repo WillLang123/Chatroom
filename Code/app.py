@@ -173,20 +173,26 @@ def handleJoinChatroom():
         cursor.close()
         conn.close()
 
+# When called to delete chatroom using curl
 @app.route('/deleteChatroom/<int:chatroomID>', methods=['DELETE'])
 def handleDeleteChatroom(chatroomID):
+    #checks to make sure a user is able to be compared before trying
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     try:
+        #connects to the database and fetches admin id from chatroom table
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('BEGIN TRANSACTION')
         cursor.execute('SELECT adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         result = cursor.fetchone()
+        #checks if there is an admin at all aka is there a chatroom
         if not result:
             return jsonify({'status': 'error', 'message': 'Chatroom not found'}), 404
+        #checks if the user in session is an admin
         if result[0] != session['userID']:
             return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+        # begins to begins to iterate through every user in the database in that chatroom and removes the respective chatroom from the list
         cursor.execute('SELECT id, chatroomIDs FROM users')
         users = cursor.fetchall()
         for user in users:
@@ -196,14 +202,17 @@ def handleDeleteChatroom(chatroomID):
                     chatroomIDs.remove(str(chatroomID))
                     newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
                     cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (newChatroomIDs, user[0]))
+        #tries to delete the database table for the chatroom's messages
         try:
             cursor.execute(f'DROP TABLE IF EXISTS messages_{chatroomID}')
         except Exception as e:
             print(f"Error dropping message table: {str(e)}")
+        #finally removes the chatroom from the chatrooms database
         cursor.execute('DELETE FROM chatrooms WHERE id = ?', (chatroomID,))
         cursor.execute('COMMIT')
         return jsonify({'status': 'success'}), 200
     except Exception as e:
+        #undoes changes if it messes up somehow
         print(f"Error deleting chatroom: {str(e)}")
         cursor.execute('ROLLBACK')
         return jsonify({'status': 'error', 'message': 'Failed to delete chatroom'}), 500

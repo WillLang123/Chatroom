@@ -250,6 +250,7 @@ async function loadChatrooms() {
             chatArea.className = `chat-area ${index === 0 ? 'active' : ''}`;
             chatArea.id = `chat-${chatroom.id}`;
             chatArea.setAttribute('data-chatroom-id', chatroom.id);
+            //Renders HTML for sending messages
             chatArea.innerHTML = `
                 <div class="chat-header">
                     <h3>${chatroom.name}</h3>
@@ -262,6 +263,7 @@ async function loadChatrooms() {
                 </div>`;
             contentContainer.appendChild(chatArea);
             const input = chatArea.querySelector('.chat-input input');
+            //takes input and looks for enter key or submit button and tries to send messsage with chatroom id
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -312,14 +314,18 @@ async function loadMessages(chatroomId) {
 async function sendMessage(chatroomId) {
     const input = document.querySelector(`#chat-${chatroomId} .chat-input input`);
     const message = input.value.trim();
+    //trims input from HTML
     if (!message) return;
+    //breaks if input is empty
     try {
+        //sends curl message to server to send message as well as a json of the message
         const response = await fetch(`/chatroom/${chatroomId}/send`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message })
         });
         const data = await response.json();
+        //waits for response and gives feedback accordingly
         if (data.status === 'success') {
             input.value = '';
         } else {
@@ -336,6 +342,7 @@ function setupMessageStream(chatroomId) {
         messageStreams[chatroomId].close();
         delete messageStreams[chatroomId];
     }
+    //reopens message stream if it is already opened
     const eventSource = new EventSource(`/chatroom/${chatroomId}/stream`);
     eventSource.onmessage = (event) => {
         try {

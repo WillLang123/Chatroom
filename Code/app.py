@@ -251,23 +251,29 @@ def getChatroomMessages(chatroomID):
 
 @app.route('/chatroom/<int:chatroomID>/send', methods=['POST'])
 def handleSendMessage(chatroomID):
+    # checks if user is logged in
     if 'userID' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
     chatroom = getChatroomByID(chatroomID)
+    # checks if user is in the chatroom
     if not chatroom or session['userID'] not in chatroom['users']:
         return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+    # grabs the json data, gets the message part, and check if its empty
     data = request.get_json()
     message = data.get('message')
     if not message or not message.strip():
         return jsonify({'status': 'error', 'message': 'Message cannot be empty'}), 400
     try:
+        # tries to open database and put message in database
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         createMessageTable(chatroomID)
         cursor.execute(f'''INSERT INTO messages_{chatroomID} (userID, message) VALUES (?, ?)''', (session['userID'], message.strip()))
         messageID = cursor.lastrowid
+        # gets user from user database using the user id for message database
         cursor.execute('SELECT username FROM users WHERE id = ?', (session['userID'],))
         username = cursor.fetchone()[0]
+        # pushes message and return feedback
         conn.commit()
         return jsonify({'status': 'success', 'message': {
             'id': messageID,
@@ -286,15 +292,18 @@ def handleSendMessage(chatroomID):
 
 @app.route('/chatroom/<int:chatroomID>/stream')
 def streamMessages(chatroomID):
+    # checks if user is logged in
     if 'userID' not in session:
         return 'Not logged in', 401
     chatroom = getChatroomByID(chatroomID)
+    # checks if user is in chatroom
     if not chatroom or session['userID'] not in chatroom['users']:
         return 'Not authorized', 403
     def generate():
         lastID = 0
         while True:
             try:
+                #continuous tries to get ****
                 conn = sqlite3.connect('chatroom.db')
                 cursor = conn.cursor()
                 createMessageTable(chatroomID)

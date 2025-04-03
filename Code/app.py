@@ -17,13 +17,13 @@ def register():
     data = request.get_json()
     username, password = data.get('username'), data.get('password')
     if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Username and password are required'}), 400
+        return jsonify({'error': 'Username and password are required'}), 400
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
         if cursor.fetchone():
-            return jsonify({'status': 'error', 'message': 'Username already exists'}), 400
+            return jsonify({'error': 'Username already exists'}), 400
         cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))
         userID = cursor.lastrowid
         conn.commit()
@@ -33,7 +33,7 @@ def register():
     except Exception as e:
         print(f"Error registering user: {str(e)}")
         conn.rollback()
-        return jsonify({'status': 'error', 'message': 'Failed to register user'}), 500
+        return jsonify({'error': 'Failed to register user'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -43,22 +43,22 @@ def login():
     data = request.get_json()
     username, password = data.get('username'), data.get('password')
     if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Username and password are required'}), 400
+        return jsonify({'error': 'Username and password are required'}), 400
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         if not user:
-            return jsonify({'status': 'error', 'message': 'Invalid username or password'}), 401
+            return jsonify({'error': 'Invalid username or password'}), 401
         if password != user[2]:
-            return jsonify({'status': 'error', 'message': 'Invalid username or password'}), 401
+            return jsonify({'error': 'Invalid username or password'}), 401
         session['userID'] = user[0]
         session['username'] = user[1]
         return jsonify({'status': 'success', 'user': {'id': user[0], 'username': user[1]}}), 200
     except Exception as e:
         print(f"Error logging in user: {str(e)}")
-        return jsonify({'status': 'error', 'message': 'Failed to log in'}), 500
+        return jsonify({'error': 'Failed to log in'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -70,22 +70,22 @@ def logout():
         return jsonify({'status': 'success'}), 200
     except Exception as e:
         print(f"Error logging out user: {str(e)}")
-        return jsonify({'status': 'error', 'message': 'Failed to log out'}), 500
+        return jsonify({'error': 'Failed to log out'}), 500
 
 @app.route('/checkLogin', methods=['GET'])
 def checkLogin():
     try:
         if 'userID' in session:
             return jsonify({'status': 'success', 'user': {'id': session['userID'], 'username': session['username']}}), 200
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     except Exception as e:
         print(f"Error checking auth: {str(e)}")
-        return jsonify({'status': 'error', 'message': 'Failed to check auth'}), 500
+        return jsonify({'error': 'Failed to check auth'}), 500
 
 @app.route('/chatrooms', methods=['GET'])
 def getChatrooms():
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
@@ -107,7 +107,7 @@ def getChatrooms():
         return jsonify({'status': 'success', 'chatrooms': chatrooms}), 200
     except Exception as e:
         print(f"Error getting user chatrooms: {str(e)}")
-        return jsonify({'status': 'error', 'message': 'Failed to get chatrooms'}), 500
+        return jsonify({'error': 'Failed to get chatrooms'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -115,11 +115,11 @@ def getChatrooms():
 @app.route('/createChatroom', methods=['POST'])
 def handleCreateChatroom():
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     data = request.get_json()
     name = data.get('name')
     if not name:
-        return jsonify({'status': 'error', 'message': 'Chatroom name is required'}), 400
+        return jsonify({'error': 'Chatroom name is required'}), 400
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
@@ -136,7 +136,7 @@ def handleCreateChatroom():
     except Exception as e:
         print(f"Error creating chatroom: {str(e)}")
         conn.rollback()
-        return jsonify({'status': 'error', 'message': 'Failed to create chatroom'}), 500
+        return jsonify({'error': 'Failed to create chatroom'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -144,23 +144,23 @@ def handleCreateChatroom():
 @app.route('/joinChatroom', methods=['POST'])
 def handleJoinChatroom():
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     data = request.get_json()
     chatroomID = data.get('chatroomID')
     if not chatroomID:
-        return jsonify({'status': 'error', 'message': 'Chatroom ID is required'}), 400
+        return jsonify({'error': 'Chatroom ID is required'}), 400
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
         cursor.execute('SELECT name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
         if not chatroom:
-            return jsonify({'status': 'error', 'message': 'Chatroom not found'}), 404
+            return jsonify({'error': 'Chatroom not found'}), 404
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
         chatroomIDs = result[0].split(',') if result[0] else []
         if str(chatroomID) in chatroomIDs:
-            return jsonify({'status': 'error', 'message': 'Already in chatroom'}), 400
+            return jsonify({'error': 'Already in chatroom'}), 400
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
         conn.commit()
@@ -168,7 +168,7 @@ def handleJoinChatroom():
     except Exception as e:
         print(f"Error joining chatroom: {str(e)}")
         conn.rollback()
-        return jsonify({'status': 'error', 'message': 'Failed to join chatroom'}), 500
+        return jsonify({'error': 'Failed to join chatroom'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -178,7 +178,7 @@ def handleJoinChatroom():
 def handleDeleteChatroom(chatroomID):
     #checks to make sure a user is able to be compared before trying
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     try:
         #connects to the database and fetches admin id from chatroom table
         conn = sqlite3.connect('chatroom.db')
@@ -188,10 +188,10 @@ def handleDeleteChatroom(chatroomID):
         result = cursor.fetchone()
         #checks if there is an admin at all aka is there a chatroom
         if not result:
-            return jsonify({'status': 'error', 'message': 'Chatroom not found'}), 404
+            return jsonify({'error': 'Chatroom not found'}), 404
         #checks if the user in session is an admin
         if result[0] != session['userID']:
-            return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+            return jsonify({'error': 'Not authorized'}), 403
         # begins to begins to iterate through every user in the database in that chatroom and removes the respective chatroom from the list
         cursor.execute('SELECT id, chatroomIDs FROM users')
         users = cursor.fetchall()
@@ -215,7 +215,7 @@ def handleDeleteChatroom(chatroomID):
         #undoes changes if it messes up somehow
         print(f"Error deleting chatroom: {str(e)}")
         cursor.execute('ROLLBACK')
-        return jsonify({'status': 'error', 'message': 'Failed to delete chatroom'}), 500
+        return jsonify({'error': 'Failed to delete chatroom'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -223,10 +223,10 @@ def handleDeleteChatroom(chatroomID):
 @app.route('/chatroom/<int:chatroomID>/messages')
 def getChatroomMessages(chatroomID):
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     chatroom = getChatroomByID(chatroomID)
     if not chatroom or session['userID'] not in chatroom['users']:
-        return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+        return jsonify({'error': 'Not authorized'}), 403
     try:
         conn = sqlite3.connect('chatroom.db')
         cursor = conn.cursor()
@@ -253,16 +253,16 @@ def getChatroomMessages(chatroomID):
 def handleSendMessage(chatroomID):
     # checks if user is logged in
     if 'userID' not in session:
-        return jsonify({'status': 'error', 'message': 'Not logged in'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     chatroom = getChatroomByID(chatroomID)
     # checks if user is in the chatroom
     if not chatroom or session['userID'] not in chatroom['users']:
-        return jsonify({'status': 'error', 'message': 'Not authorized'}), 403
+        return jsonify({'error': 'Not authorized'}), 403
     # grabs the json data, gets the message part, and check if its empty
     data = request.get_json()
     message = data.get('message')
     if not message or not message.strip():
-        return jsonify({'status': 'error', 'message': 'Message cannot be empty'}), 400
+        return jsonify({'error': 'Message cannot be empty'}), 400
     try:
         # tries to open database and put message in database
         conn = sqlite3.connect('chatroom.db')
@@ -285,7 +285,7 @@ def handleSendMessage(chatroomID):
     except Exception as e:
         print(f"Error sending message: {str(e)}")
         conn.rollback()
-        return jsonify({'status': 'error', 'message': 'Failed to send message'}), 500
+        return jsonify({'error': 'Failed to send message'}), 500
     finally:
         cursor.close()
         conn.close()

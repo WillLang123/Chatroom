@@ -329,18 +329,18 @@ def streamMessages(chatroomID):
             time.sleep(1)
     return Response(generate(), mimetype='text/event-stream')
 
-if __name__ == '__main__':
-    conn = sqlite3.connect('chatroom.db')
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS chatrooms (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,adminID INTEGER NOT NULL,FOREIGN KEY (adminID) REFERENCES users (id))''')
-        conn.commit()
-        print("Database initialized successfully")
-    except Exception as e:
-        print(f"Error initializing database: {str(e)}")
-        conn.rollback()
-    finally:
-        cursor.close()
-        conn.close()
-    app.run(host='0.0.0.0', port=3000, debug=True)
+
+conn = sqlite3.connect('chatroom.db')
+cursor = conn.cursor()
+try:
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS chatrooms (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,adminID INTEGER NOT NULL,FOREIGN KEY (adminID) REFERENCES users (id))''')
+    conn.commit()
+    print("Database initialized successfully")
+except Exception as e:
+    print(f"Error initializing database: {str(e)}")
+    conn.rollback()
+finally:
+    cursor.close()
+    conn.close()
+app.run(host='0.0.0.0', port=3000, debug=True)

@@ -4,14 +4,14 @@ let messageStreams = {};
 let deleteInProgress = new Set();
 
 function toggleForm(formType) {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    if (formType === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    if (formType === "login") {
+        loginForm.style.display = "block";
+        registerForm.style.display = "none";
     } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
     }
 }
 
@@ -19,19 +19,19 @@ async function register() {
     const username = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
     try {
-        const response = await fetch('/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
         if (dataFromServer.status === 'success') {
             await login(username, password);
         } else {
-            document.getElementById('register-error').textContent = dataFromServer.message;
+            document.getElementById("register-error").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById('register-error').textContent = 'An error occurred during registration';
+        document.getElementById("register-error").textContent = "An error occurred during registration";
     }
 }
 
@@ -41,62 +41,62 @@ async function login(username = null, password = null) {
         password = document.getElementById('login-password').value;
     }
     try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
         if (dataFromServer.status === 'success') {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('chat-section').style.display = 'block';
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("chat-section").style.display = "block";
             currentUserId = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         } else {
-            document.getElementById('login-error').textContent = dataFromServer.message;
+            document.getElementById("login-error").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById('login-error').textContent = 'An error occurred during login';
+        document.getElementById("login-error").textContent = "An error occurred during login";
     }
 }
 
 async function logout() {
     try {
-        const response = await fetch('/logout', { method: 'POST' });
+        const response = await fetch("/logout", { method: "POST" });
         const dataFromServer = await response.json();
         if (dataFromServer.status === 'success') {
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('chat-section').style.display = 'none';
+            document.getElementById("auth-section").style.display = "block";
+            document.getElementById("chat-section").style.display = "none";
             currentUserId = null;
             currentUsername = null;
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('register-username').value = '';
-            document.getElementById('register-password').value = '';
-            document.getElementById('login-error').textContent = '';
-            document.getElementById('register-error').textContent = '';
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+            document.getElementById("register-username").value = "";
+            document.getElementById("register-password").value = "";
+            document.getElementById("login-error").textContent = "";
+            document.getElementById("register-error").textContent = "";
             Object.values(messageStreams).forEach(stream => stream.close());
             messageStreams = {};
         }
     } catch (error) {
-        console.error('Error during logout:', error);
+        console.error("Error during logout:", error);
     }
 }
 
 async function checkLogin() {
     try {
-        const response = await fetch('/checkLogin');
+        const response = await fetch("/checkLogin");
         const dataFromServer = await response.json();
         if (dataFromServer.status === 'success' && dataFromServer.authenticated) {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('chat-section').style.display = 'block';
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("chat-section").style.display = "block";
             currentUserId = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         }
     } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error("Error checking authentication:", error);
     }
 }
 

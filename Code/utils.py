@@ -26,10 +26,10 @@ def getChatroomByID(chatroomID):
         for row in cursor.fetchall():
             users.append(row[0])
         return {
-            'id': chatroom[0],
-            'name': chatroom[1],
-            'adminID': chatroom[2],
-            'users': users
+            "id": chatroom[0],
+            "name": chatroom[1],
+            "adminID": chatroom[2],
+            "users": users
         }
     except Exception as e:
         print("Error getting chatroom")

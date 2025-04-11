@@ -24,11 +24,11 @@ async function register() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             await login(username, password);
         } else {
-            document.getElementById('register-error').textContent = data.message;
+            document.getElementById('register-error').textContent = dataFromServer.message;
         }
     } catch (error) {
         document.getElementById('register-error').textContent = 'An error occurred during registration';
@@ -46,15 +46,15 @@ async function login(username = null, password = null) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('chat-section').style.display = 'block';
-            currentUserId = data.user.id;
-            currentUsername = data.user.username;
+            currentUserId = dataFromServer.user.id;
+            currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         } else {
-            document.getElementById('login-error').textContent = data.message;
+            document.getElementById('login-error').textContent = dataFromServer.message;
         }
     } catch (error) {
         document.getElementById('login-error').textContent = 'An error occurred during login';
@@ -64,8 +64,8 @@ async function login(username = null, password = null) {
 async function logout() {
     try {
         const response = await fetch('/logout', { method: 'POST' });
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             document.getElementById('auth-section').style.display = 'block';
             document.getElementById('chat-section').style.display = 'none';
             currentUserId = null;
@@ -87,12 +87,12 @@ async function logout() {
 async function checkLogin() {
     try {
         const response = await fetch('/checkLogin');
-        const data = await response.json();
-        if (data.status === 'success' && data.authenticated) {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success' && dataFromServer.authenticated) {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('chat-section').style.display = 'block';
-            currentUserId = data.user.id;
-            currentUsername = data.user.username;
+            currentUserId = dataFromServer.user.id;
+            currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         }
     } catch (error) {
@@ -109,12 +109,12 @@ async function createChatroom() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
         });
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             document.getElementById('chatroom-name').value = '';
             await loadChatrooms();
         } else {
-            alert(data.message);
+            alert(dataFromServer.message);
         }
     } catch (error) {
         console.error('Error creating chatroom:', error);
@@ -131,12 +131,12 @@ async function joinChatroom() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chatroomID: parseInt(id) })
         });
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             document.getElementById('chatroom-id').value = '';
             await loadChatrooms();
         } else {
-            alert(data.message);
+            alert(dataFromServer.message);
         }
     } catch (error) {
         console.error('Error joining chatroom:', error);
@@ -165,9 +165,9 @@ async function deleteChatroom(chatroomId) {
         }
         //Calls server using curl to delete that chatroom
         const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: 'DELETE' });
-        const data = await response.json();
+        const dataFromServer = await response.json();
         //figures out if it worked
-        if (data.status === 'success') {
+        if (dataFromServer.status === 'success') {
             const tab = document.querySelector(`.tab[data-chatroom-id="${chatroomId}"]`);
             const chatArea = document.getElementById(`chat-${chatroomId}`);
             //removes elements about that chatroom
@@ -194,7 +194,7 @@ async function deleteChatroom(chatroomId) {
                     </div>`;
             }
         } else {
-            alert(data.message || 'Failed to delete chatroom');
+            alert(dataFromServer.message || 'Failed to delete chatroom');
         }
     } catch (error) {
         //shows error if there was a problem
@@ -214,13 +214,13 @@ async function deleteChatroom(chatroomId) {
 async function loadChatrooms() {
     try {
         const response = await fetch('/chatrooms');
-        const data = await response.json();
+        const dataFromServer = await response.json();
         const tabsContainer = document.getElementById('chatroom-tabs');
         const contentContainer = document.getElementById('tab-content');
         if (!tabsContainer || !contentContainer) return;
         tabsContainer.innerHTML = '';
         contentContainer.innerHTML = '';
-        if (!data.chatrooms || data.chatrooms.length === 0) {
+        if (!dataFromServer.chatrooms || dataFromServer.chatrooms.length === 0) {
             contentContainer.innerHTML = `
                 <div class="welcome-message">
                     <h2>Welcome to the Chat App!</h2>
@@ -228,7 +228,7 @@ async function loadChatrooms() {
                 </div>`;
             return;
         }
-        data.chatrooms.forEach((chatroom, index) => {
+        dataFromServer.chatrooms.forEach((chatroom, index) => {
             const tab = document.createElement('div');
             tab.className = `tab ${index === 0 ? 'active' : ''}`;
             tab.setAttribute('data-chatroom-id', chatroom.id);
@@ -298,12 +298,12 @@ function switchTab(chatroomId) {
 async function loadMessages(chatroomId) {
     try {
         const response = await fetch(`/chatroom/${chatroomId}/messages`);
-        const data = await response.json();
-        if (data.status === 'success') {
+        const dataFromServer = await response.json();
+        if (dataFromServer.status === 'success') {
             const messageContainer = document.querySelector(`#messages-${chatroomId}`);
             if (!messageContainer) return;
             messageContainer.innerHTML = '';
-            data.messages.forEach(message => appendMessage(chatroomId, message));
+            dataFromServer.messages.forEach(message => appendMessage(chatroomId, message));
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
     } catch (error) {
@@ -324,12 +324,12 @@ async function sendMessage(chatroomId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message })
         });
-        const data = await response.json();
+        const dataFromServer = await response.json();
         //waits for response and gives feedback accordingly
-        if (data.status === 'success') {
+        if (dataFromServer.status === 'success') {
             input.value = '';
         } else {
-            alert(data.message);
+            alert(dataFromServer.message);
         }
     } catch (error) {
         console.error('Error sending message:', error);

@@ -7,7 +7,7 @@ def createMessageTable(chatroomID):
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (userID) REFERENCES users (id))''')
         conn.commit()
     except Exception as e:
-        print(f"Error creating message table: {str(e)}")
+        print("Error creating message table")
         conn.rollback()
     finally:
         cursor.close()
@@ -32,7 +32,7 @@ def getChatroomByID(chatroomID):
             'users': users
         }
     except Exception as e:
-        print(f"Error getting chatroom: {str(e)}")
+        print("Error getting chatroom")
         return None
     finally:
         cursor.close()

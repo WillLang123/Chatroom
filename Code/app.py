@@ -27,7 +27,7 @@ def register():
         userID = cursor.lastrowid
         session['userID'] = userID
         session['username'] = username
-        return jsonify({"status": "success", "user": {"id": userID, "username": username}})
+        return jsonify({"signal": "ok", "user": {"id": userID, "username": username}})
     except Exception:
         print("Error registering user")
         conn.rollback()
@@ -51,7 +51,7 @@ def login():
             return jsonify({"error": "Invalid username or password"})
         session['userID'] = user[0]
         session['username'] = user[1]
-        return jsonify({"status": "success", "user": {"id": user[0], "username": user[1]}})
+        return jsonify({"signal": "ok", "user": {"id": user[0], "username": user[1]}})
     except Exception:
         print("Error logging in user")
         return jsonify({"error": "Failed to log in"})
@@ -62,7 +62,7 @@ def login():
 def logout():
     try:
         session.clear()
-        return jsonify({"status": "success"})
+        return jsonify({"signal": "ok"})
     except Exception:
         print("Error logging out user")
         return jsonify({"error": "Failed to log out"})
@@ -71,7 +71,7 @@ def logout():
 def checkLogin():
     try:
         if 'userID' in session:
-            return jsonify({"status": "success", "user": {"id": session["userID"], "username": session["username"]}})
+            return jsonify({"signal": "ok", "user": {"id": session["userID"], "username": session["username"]}})
         return jsonify({"error": "Not logged in"})
     except Exception:
         print("Error checking auth")
@@ -86,7 +86,7 @@ def getChatrooms():
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
         if not result or not result[0]:
-            return jsonify({"status": "success", "chatrooms": []})
+            return jsonify({"signal": "ok", "chatrooms": []})
         chatroomIDs = []
         for id in result[0].split(','):
             chatroomIDs.append(int(id))
@@ -100,7 +100,7 @@ def getChatrooms():
                     'name': chatroom[1],
                     'isAdmin': chatroom[2] == session['userID']
                 })
-        return jsonify({"status": "success", "chatrooms": chatrooms})
+        return jsonify({"signal": "ok", "chatrooms": chatrooms})
     except Exception:
         print("Error getting user chatrooms")
         return jsonify({"error": "Failed to get chatrooms"})
@@ -126,7 +126,7 @@ def handleCreateChatroom():
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
         cursor.execute(f'CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
         conn.commit()
-        return jsonify({"status": "success", "chatroom": {"id": chatroomID,"name": name,"isAdmin": True}})
+        return jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": name,"isAdmin": True}})
     except Exception:
         print("Error creating chatroom")
         conn.rollback()
@@ -156,7 +156,7 @@ def handleJoinChatroom():
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
         conn.commit()
-        return jsonify({"status": "success", "chatroom": {"id": chatroomID,"name": chatroom[0],"isAdmin": chatroom[1] == session['userID']}})
+        return jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": chatroom[0],"isAdmin": chatroom[1] == session['userID']}})
     except Exception:
         print("Error joining chatroom")
         conn.rollback()
@@ -200,7 +200,7 @@ def handleDeleteChatroom(chatroomID):
         #finally removes the chatroom from the chatrooms database
         cursor.execute('DELETE FROM chatrooms WHERE id = ?', (chatroomID,))
         cursor.execute('COMMIT')
-        return jsonify({"status": "success"})
+        return jsonify({"signal": "ok"})
     except Exception:
         #undoes changes if it messes up somehow
         print("Error deleting chatroom")
@@ -229,10 +229,10 @@ def getChatroomMessages(chatroomID):
                 'message': row[3],
                 'timestamp': row[4]
             })
-        return jsonify({"status": "success", "messages": messages[::-1]})
+        return jsonify({"signal": "ok", "messages": messages[::-1]})
     except Exception:
         print("Error getting messages")
-        return jsonify({"status": "success", "messages": []})
+        return jsonify({"signal": "ok", "messages": []})
     finally:
         quickClose(cursor,conn)
 
@@ -261,7 +261,7 @@ def handleSendMessage(chatroomID):
         username = cursor.fetchone()[0]
         # pushes message and return feedback
         conn.commit()
-        return jsonify({"status": "success", "message": {
+        return jsonify({"signal": "ok", "message": {
             'id': messageID,
             'userID': session['userID'],
             'username': username,
@@ -318,7 +318,7 @@ try:
     cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)')
     cursor.execute('CREATE TABLE IF NOT EXISTS chatrooms (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,adminID INTEGER NOT NULL,FOREIGN KEY (adminID) REFERENCES users (id))')
     conn.commit()
-    print("Database initialized successfully")
+    print("Databases created")
 except Exception as e:
     print("Error initializing database: {str(e)}")
     conn.rollback()

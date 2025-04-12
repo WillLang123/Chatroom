@@ -25,7 +25,7 @@ async function register() {
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             await login(username, password);
         } else {
             document.getElementById("register-error").textContent = dataFromServer.message;
@@ -47,7 +47,7 @@ async function login(username = null, password = null) {
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             document.getElementById("auth-section").style.display = "none";
             document.getElementById("chat-section").style.display = "block";
             currentUserId = dataFromServer.user.id;
@@ -65,7 +65,7 @@ async function logout() {
     try {
         const response = await fetch("/logout", { method: "POST" });
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             document.getElementById("auth-section").style.display = "block";
             document.getElementById("chat-section").style.display = "none";
             currentUserId = null;
@@ -88,7 +88,7 @@ async function checkLogin() {
     try {
         const response = await fetch("/checkLogin");
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success' && dataFromServer.authenticated) {
+        if (dataFromServer.signal === 'ok' && dataFromServer.authenticated) {
             document.getElementById("auth-section").style.display = "none";
             document.getElementById("chat-section").style.display = "block";
             currentUserId = dataFromServer.user.id;
@@ -110,7 +110,7 @@ async function createChatroom() {
             body: JSON.stringify({ name })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             document.getElementById('chatroom-name').value = '';
             await loadChatrooms();
         } else {
@@ -132,7 +132,7 @@ async function joinChatroom() {
             body: JSON.stringify({ chatroomID: parseInt(id) })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             document.getElementById('chatroom-id').value = '';
             await loadChatrooms();
         } else {
@@ -167,7 +167,7 @@ async function deleteChatroom(chatroomId) {
         const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: 'DELETE' });
         const dataFromServer = await response.json();
         //figures out if it worked
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             const tab = document.querySelector(`.tab[data-chatroom-id="${chatroomId}"]`);
             const chatArea = document.getElementById(`chat-${chatroomId}`);
             //removes elements about that chatroom
@@ -299,7 +299,7 @@ async function loadMessages(chatroomId) {
     try {
         const response = await fetch(`/chatroom/${chatroomId}/messages`);
         const dataFromServer = await response.json();
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             const messageContainer = document.querySelector(`#messages-${chatroomId}`);
             if (!messageContainer) return;
             messageContainer.innerHTML = '';
@@ -326,7 +326,7 @@ async function sendMessage(chatroomId) {
         });
         const dataFromServer = await response.json();
         //waits for response and gives feedback accordingly
-        if (dataFromServer.status === 'success') {
+        if (dataFromServer.signal === 'ok') {
             input.value = '';
         } else {
             alert(dataFromServer.message);
@@ -382,7 +382,7 @@ function appendMessage(chatroomId, message) {
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `
         <div class="sender">${message.username}</div>
-        <div class="content">${escapeHtml(message.message)}</div>
+        <div class="content">${cleanMessage(message.message)}</div>
         <div class="timestamp">${timestamp}</div>
     `;
     messageContainer.appendChild(messageElement);
@@ -392,7 +392,7 @@ function appendMessage(chatroomId, message) {
     }
 }
 
-function escapeHtml(unsafe) {
+function cleanMessage(unsafe) {
     return unsafe
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")

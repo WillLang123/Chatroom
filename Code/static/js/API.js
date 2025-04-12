@@ -3,6 +3,7 @@ let currentUsername = null;
 let messageStreams = {};
 let deleteInProgress = new Set();
 
+//start here
 function toggleForm(formType) {
     const loginForm = document.getElementById("login-form");
     const registerForm = document.getElementById("register-form");

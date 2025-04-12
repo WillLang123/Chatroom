@@ -17,21 +17,25 @@ def register():
     dataFromAPI = request.get_json()
     username, password = dataFromAPI.get('username'), dataFromAPI.get('password')
     if not username or not password:
-        return jsonify({"problem": "Username and password are required"})
+        error = jsonify({"problem": "Username and password are required"})
+        return error
     try:
         cursor, conn = quickCursor()
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
         if cursor.fetchone():
-            return jsonify({"problem": "Username already exists"})
+            error = jsonify({"problem": "Username already exists"})
+            return error
         cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))
         userID = cursor.lastrowid
         session['userID'] = userID
         session['username'] = username
-        return jsonify({"signal": "ok", "user": {"id": userID, "username": username}})
+        meessageToAPI = jsonify({"signal": "ok", "user": {"id": userID, "username": username}})
+        return meessageToAPI
     except Exception:
         print("Issue with registering user")
         conn.rollback()
-        return jsonify({"problem": "Failed to register user"})
+        error = jsonify({"problem": "Failed to register user"})
+        return error
     finally:
         quickClose(cursor,conn)
 
@@ -40,21 +44,26 @@ def login():
     dataFromAPI = request.get_json()
     username, password = dataFromAPI.get('username'), dataFromAPI.get('password')
     if not username or not password:
-        return jsonify({"problem": "Username and password are required"})
+        error = jsonify({"problem": "Username and password are required"})
+        return error
     try:
         cursor, conn = quickCursor()
         cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         if not user:
-            return jsonify({"problem": "Invalid username or password"})
+            error = jsonify({"problem": "Invalid username or password"})
+            return error
         if password != user[2]:
-            return jsonify({"problem": "Invalid username or password"})
+            error = jsonify({"problem": "Invalid username or password"})
+            return error
         session['userID'] = user[0]
         session['username'] = user[1]
-        return jsonify({"signal": "ok", "user": {"id": user[0], "username": user[1]}})
+        messageToAPI = jsonify({"signal": "ok", "user": {"id": user[0], "username": user[1]}})
+        return messageToAPI
     except Exception:
         print("Issue with logging in user")
-        return jsonify({"problem": "Failed to log in"})
+        error = jsonify({"problem": "Failed to log in"})
+        return error
     finally:
         quickClose(cursor,conn)
 
@@ -62,11 +71,14 @@ def login():
 def logout():
     try:
         session.clear()
-        return jsonify({"signal": "ok"})
+        messageToAPI = jsonify({"signal": "ok"})
+        return messageToAPI
     except Exception:
         print("Issue with logging out user")
-        return jsonify({"problem": "Failed to log out"})
+        error = jsonify({"problem": "Failed to log out"})
+        return error
 
+#Start naming here
 @app.route("/checkLogin", methods=["GET"])
 def checkLogin():
     try:

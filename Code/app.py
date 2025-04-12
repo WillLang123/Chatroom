@@ -78,27 +78,31 @@ def logout():
         error = jsonify({"problem": "Failed to log out"})
         return error
 
-#Start naming here
 @app.route("/checkLogin", methods=["GET"])
 def checkLogin():
     try:
         if 'userID' in session:
-            return jsonify({"signal": "ok", "user": {"id": session["userID"], "username": session["username"]}})
-        return jsonify({"problem": "Not logged in"})
+            messageToAPI = jsonify({"signal": "ok", "user": {"id": session["userID"], "username": session["username"]}})
+            return messageToAPI
+        error = jsonify({"problem": "Not logged in"})
+        return error
     except Exception:
         print("Issue with checking auth")
-        return jsonify({"problem": "Failed to check auth"})
+        error =jsonify({"problem": "Failed to check auth"})
+        return error
 
 @app.route("/chatrooms", methods=["GET"])
 def getChatrooms():
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error = jsonify({"problem": "Not logged in"})
+        return error
     try:
         cursor, conn = quickCursor()
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
         if not result or not result[0]:
-            return jsonify({"signal": "ok", "chatrooms": []})
+            messageToAPI = jsonify({"signal": "ok", "chatrooms": []})
+            return messageToAPI
         chatroomIDs = []
         for id in result[0].split(','):
             chatroomIDs.append(int(id))
@@ -112,21 +116,25 @@ def getChatrooms():
                     'name': chatroom[1],
                     'isAdmin': chatroom[2] == session['userID']
                 })
-        return jsonify({"signal": "ok", "chatrooms": chatrooms})
+        messageToAPI = jsonify({"signal": "ok", "chatrooms": chatrooms})
+        return messageToAPI
     except Exception:
         print("Issue with getting user chatrooms")
-        return jsonify({"problem": "Failed to get chatrooms"})
+        error = jsonify({"problem": "Failed to get chatrooms"})
+        return error
     finally:
         quickClose(cursor,conn)
 
 @app.route("/createChatroom", methods=["POST"])
 def handleCreateChatroom():
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error =jsonify({"problem": "Not logged in"})
+        return error
     dataFromAPI = request.get_json()
     name = dataFromAPI.get('name')
     if not name:
-        return jsonify({"problem": "Chatroom name is required"})
+        error = jsonify({"problem": "Chatroom name is required"})
+        return error
     try:
         cursor, conn = quickCursor()
         cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, session['userID']))
@@ -138,41 +146,49 @@ def handleCreateChatroom():
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
         cursor.execute(f'CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
         conn.commit()
-        return jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": name,"isAdmin": True}})
+        messageToAPI = jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": name,"isAdmin": True}})
+        return messageToAPI
     except Exception:
         print("Issue with creating chatroom")
         conn.rollback()
-        return jsonify({"problem": "Failed to create chatroom"})
+        error = jsonify({"problem": "Failed to create chatroom"})
+        return error
     finally:
         quickClose(cursor,conn)
 
 @app.route("/joinChatroom", methods=["POST"])
 def handleJoinChatroom():
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error = jsonify({"problem": "Not logged in"})
+        return error
     dataFromAPI = request.get_json()
     chatroomID = dataFromAPI.get('chatroomID')
     if not chatroomID:
-        return jsonify({"problem": "Chatroom ID is required"})
+        error = jsonify({"problem": "Chatroom ID is required"})
+        return error
     try:
         cursor, conn = quickCursor()
         cursor.execute('SELECT name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
         if not chatroom:
-            return jsonify({"problem": "Chatroom not found"})
+            error = jsonify({"problem": "Chatroom not found"})
+            return error
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
         chatroomIDs = result[0].split(',') if result[0] else []
         if str(chatroomID) in chatroomIDs:
-            return jsonify({"problem": "Already in chatroom"})
+            error = jsonify({"problem": "Already in chatroom"})
+            return error
         chatroomIDs.append(str(chatroomID))
         cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
         conn.commit()
-        return jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": chatroom[0],"isAdmin": chatroom[1] == session['userID']}})
+        messageToAPI = jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": chatroom[0],"isAdmin": chatroom[1] == session['userID']}})
+        return messageToAPI
     except Exception:
         print("Issue with joining chatroom")
         conn.rollback()
-        return jsonify({"problem": "Failed to join chatroom"})
+        error =jsonify({"problem": "Failed to join chatroom"})
+        return error
     finally:
         quickClose(cursor,conn)
 
@@ -181,7 +197,8 @@ def handleJoinChatroom():
 def handleDeleteChatroom(chatroomID):
     #checks to make sure a user is able to be compared before trying
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error =jsonify({"problem": "Not logged in"})
+        return error
     try:
         #connects to the database and fetches admin id from chatroom table
         cursor, conn = quickCursor()
@@ -190,10 +207,12 @@ def handleDeleteChatroom(chatroomID):
         result = cursor.fetchone()
         #checks if there is an admin at all aka is there a chatroom
         if not result:
-            return jsonify({"problem": "Chatroom not found"})
+            error = jsonify({"problem": "Chatroom not found"})
+            return error
         #checks if the user in session is an admin
         if result[0] != session['userID']:
-            return jsonify({"problem": "Not authorized"})
+            error = jsonify({"problem": "Not authorized"})
+            return error
         # begins to begins to iterate through every user in the database in that chatroom and removes the respective chatroom from the list
         cursor.execute('SELECT id, chatroomIDs FROM users')
         users = cursor.fetchall()
@@ -212,22 +231,26 @@ def handleDeleteChatroom(chatroomID):
         #finally removes the chatroom from the chatrooms database
         cursor.execute('DELETE FROM chatrooms WHERE id = ?', (chatroomID,))
         cursor.execute('COMMIT')
-        return jsonify({"signal": "ok"})
+        messageToAPI = jsonify({"signal": "ok"})
+        return messageToAPI
     except Exception:
         #undoes changes if it messes up somehow
         print("Issue with deleting chatroom")
         cursor.execute('ROLLBACK')
-        return jsonify({"problem": "Failed to delete chatroom"})
+        error = jsonify({"problem": "Failed to delete chatroom"})
+        return error
     finally:
         quickClose(cursor,conn)
 
 @app.route("/chatroom/<int:chatroomID>/messages", methods=["GET"])
 def getChatroomMessages(chatroomID):
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error = jsonify({"problem": "Not logged in"})
+        return error
     chatroom = getChatroomByID(chatroomID)
     if not chatroom or session['userID'] not in chatroom['users']:
-        return jsonify({"problem": "Not authorized"})
+        error = jsonify({"problem": "Not authorized"})
+        return error
     try:
         cursor, conn = quickCursor()
         createMessageTable(chatroomID)
@@ -241,10 +264,12 @@ def getChatroomMessages(chatroomID):
                 'message': row[3],
                 'timestamp': row[4]
             })
-        return jsonify({"signal": "ok", "messages": messages[::-1]})
+        messageToAPI = jsonify({"signal": "ok", "messages": messages[::-1]})
+        return messageToAPI
     except Exception:
         print("Issue with getting messages")
-        return jsonify({"signal": "ok", "messages": []})
+        messageToAPI = jsonify({"signal": "ok", "messages": []})
+        return messageToAPI
     finally:
         quickClose(cursor,conn)
 
@@ -252,16 +277,19 @@ def getChatroomMessages(chatroomID):
 def handleSendMessage(chatroomID):
     # checks if user is logged in
     if 'userID' not in session:
-        return jsonify({"problem": "Not logged in"})
+        error = jsonify({"problem": "Not logged in"})
+        return error
     chatroom = getChatroomByID(chatroomID)
     # checks if user is in the chatroom
     if not chatroom or session['userID'] not in chatroom['users']:
-        return jsonify({"problem": "Not authorized"})
+        error = jsonify({"problem": "Not authorized"})
+        return error
     # grabs the json data, gets the message part, and check if its empty
     dataFromAPI = request.get_json()
     message = dataFromAPI.get('message')
     if not message or not message.strip():
-        return jsonify({"problem": "Message cannot be empty"})
+        error = jsonify({"problem": "Message cannot be empty"})
+        return error
     try:
         # tries to open database and put message in database
         cursor, conn = quickCursor()
@@ -273,17 +301,19 @@ def handleSendMessage(chatroomID):
         username = cursor.fetchone()[0]
         # pushes message and return feedback
         conn.commit()
-        return jsonify({"signal": "ok", "message": {
+        messageToAPI = jsonify({"signal": "ok", "message": {
             'id': messageID,
             'userID': session['userID'],
             'username': username,
             'message': message.strip(),
             'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
         }})
+        return messageToAPI
     except Exception:
         print("Issue with sending message")
         conn.rollback()
-        return jsonify({"problem": "Failed to send message"})
+        error = jsonify({"problem": "Failed to send message"})
+        return error
     finally:
         quickClose(cursor,conn)
 

@@ -1,8 +1,16 @@
 import sqlite3
 
+def quickCursor():
+    connection = sqlite3.connect('chatroom.db')
+    cursor = connection.cursor()
+    return cursor, connection
+
+def quickClose(cursor, connection):
+    cursor.close()
+    connection.close()
+
 def createMessageTable(chatroomID):
-    conn = sqlite3.connect('chatroom.db')
-    cursor = conn.cursor()
+    cursor, conn = quickCursor()
     try:
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (userID) REFERENCES users (id))''')
         conn.commit()
@@ -10,13 +18,11 @@ def createMessageTable(chatroomID):
         print("Error creating message table")
         conn.rollback()
     finally:
-        cursor.close()
-        conn.close()
+        quickClose(cursor, conn)
 
 def getChatroomByID(chatroomID):
     try:
-        conn = sqlite3.connect('chatroom.db')
-        cursor = conn.cursor()
+        cursor, conn = quickCursor()
         cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
         chatroom = cursor.fetchone()
         if not chatroom:
@@ -35,5 +41,4 @@ def getChatroomByID(chatroomID):
         print("Error getting chatroom")
         return None
     finally:
-        cursor.close()
-        conn.close() 
+        quickClose(cursor, conn)

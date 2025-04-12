@@ -31,7 +31,7 @@ async function register() {
             document.getElementById("register-error").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById("register-error").textContent = "An error occurred during registration";
+        document.getElementById("register-error").textContent = "A problem occurred during registration";
     }
 }
 
@@ -57,7 +57,7 @@ async function login(username = null, password = null) {
             document.getElementById("login-error").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById("login-error").textContent = "An error occurred during login";
+        document.getElementById("login-error").textContent = "A problem occurred during login";
     }
 }
 
@@ -80,7 +80,7 @@ async function logout() {
             messageStreams = {};
         }
     } catch (error) {
-        console.error("Error during logout:", error);
+        console.error("Problem during logout:", error);
     }
 }
 
@@ -96,7 +96,7 @@ async function checkLogin() {
             await loadChatrooms();
         }
     } catch (error) {
-        console.error("Error checking authentication:", error);
+        console.error("Problem checking authentication:", error);
     }
 }
 
@@ -117,7 +117,7 @@ async function createChatroom() {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Error creating chatroom:', error);
+        console.error('Problem creating chatroom:', error);
         alert('Failed to create chatroom. Please try again.');
     }
 }
@@ -139,7 +139,7 @@ async function joinChatroom() {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Error joining chatroom:', error);
+        console.error('Problem joining chatroom:', error);
         alert('Failed to join chatroom. Please try again.');
     }
 }
@@ -198,7 +198,7 @@ async function deleteChatroom(chatroomId) {
         }
     } catch (error) {
         //shows error if there was a problem
-        console.error('Error deleting chatroom:', error);
+        console.error('Problem deleting chatroom:', error);
         alert('Failed to delete chatroom. Please try again.');
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
@@ -274,7 +274,7 @@ async function loadChatrooms() {
             setupMessageStream(chatroom.id);
         });
     } catch (error) {
-        console.error('Error loading chatrooms:', error);
+        console.error('Problem loading chatrooms:', error);
     }
 }
 
@@ -307,7 +307,7 @@ async function loadMessages(chatroomId) {
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
     } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error('Problem loading messages:', error);
     }
 }
 
@@ -332,7 +332,7 @@ async function sendMessage(chatroomId) {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Problem sending message:', error);
         alert('Failed to send message. Please try again.');
     }
 }
@@ -350,7 +350,7 @@ function setupMessageStream(chatroomId) {
             if (message.error) return;
             appendMessage(chatroomId, message);
         } catch (error) {
-            console.error('Error processing message:', error);
+            console.error('Problem processing message:', error);
         }
     };
     eventSource.onerror = (error) => {

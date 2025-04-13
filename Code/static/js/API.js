@@ -226,8 +226,8 @@ async function loadChatrooms(){
         if(!dataFromServer.chatrooms || (Object.is(dataFromServer.chatrooms.length,0))){
             contentContainer.innerHTML = `
                 <div class="welcomeBanner">
-                    <h2>Welcome to the Chat App!</h2>
-                    <p>Create a new chatroom or join an existing one to start chatting.</p>
+                    <h2>Welcome to the Chatroom Website</h2>
+                    <p>Either create a chatroom or join one with an ID to talk to others.</p>
                 </div>`;
             return;
         }

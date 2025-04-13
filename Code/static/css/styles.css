@@ -33,7 +33,7 @@ body {
     margin: 0;
 }
 
-.auth-container {
+.regLoginContainer {
     max-width: 400px;
     margin: 50px auto;
     padding: 20px;
@@ -42,26 +42,26 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.auth-container h2 {
+.regLoginContainer h2 {
     text-align: center;
     margin-bottom: 20px;
     color: #2c3e50;
 }
 
-.form-group {
+.formStyles {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
 }
 
-.form-group label {
+.formStyles label {
     display: block;
     margin-bottom: 5px;
     color: #2c3e50;
 }
 
-.form-group input {
+.formStyles input {
     width: 200px;
     padding: 8px;
     border: 1px solid #ddd;
@@ -69,7 +69,7 @@ body {
     font-size: 14px;
 }
 
-.btn {
+.button {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -79,7 +79,7 @@ body {
     white-space: nowrap;
 }
 
-.btn-primary {
+.buttonOne {
     background: #3498db;
     color: white;
     width: 100%;
@@ -87,36 +87,29 @@ body {
     margin-bottom: 10px;
 }
 
-.btn-secondary {
-    background: #2ecc71;
-    color: white;
-    width: 100%;
-    padding: 10px;
-}
-
-.btn:hover {
+.button:hover {
     opacity: 0.9;
 }
 
-.error-message {
+.errorMessage {
     color: #e74c3c;
     margin-top: 10px;
     text-align: center;
 }
 
-.switch-form {
+.toggleForm {
     text-align: center;
     margin-top: 15px;
     color: #7f8c8d;
 }
 
-.switch-form a {
+.toggleForm a {
     color: #3498db;
     text-decoration: none;
     font-weight: bold;
 }
 
-.switch-form a:hover {
+.toggleForm a:hover {
     text-decoration: underline;
 }
 
@@ -125,17 +118,17 @@ body {
     gap: 20px;
 }
 
-.btn-create {
+.buttonCreate {
     background: #27ae60;
     color: white;
 }
 
-.btn-join {
+.buttonJoin {
     background: #3498db;
     color: white;
 }
 
-.btn-delete {
+.buttonDelete {
     background: #e74c3c;
     color: white;
     padding: 4px 8px;
@@ -163,7 +156,7 @@ body {
     min-width: fit-content;
 }
 
-.tab .tab-content {
+.tab .tabContent {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -174,23 +167,23 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
-.tab-content {
+.tabContent {
     padding: 20px;
     height: calc(100vh - 180px);
     overflow-y: auto;
 }
 
-.chat-area {
+.chatroomSection {
     display: none;
     height: 100%;
 }
 
-.chat-area.active {
+.chatroomSection.active {
     display: flex;
     flex-direction: column;
 }
 
-.chat-header {
+.chatroomBanner {
     padding: 10px;
     background: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
@@ -237,7 +230,7 @@ body {
     text-align: right;
 }
 
-.chat-input {
+.messageBox {
     display: flex;
     gap: 10px;
     padding: 20px;
@@ -245,7 +238,7 @@ body {
     border-top: 1px solid #e9ecef;
 }
 
-.chat-input input {
+.messageBox input {
     flex: 1;
     padding: 10px 15px;
     border: 1px solid #ddd;
@@ -254,23 +247,23 @@ body {
     min-width: 0;
 }
 
-.chat-input button {
+.messageBox button {
     padding: 10px 20px;
     width: 80px;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
-.welcome-message {
+.welcomeBanner {
     text-align: center;
     color: #7f8c8d;
     margin-top: 50px;
 }
 
-#auth-section {
+#regLoginDisplay {
     display: block;
 }
 
-#chat-section {
+#chatroomsDisplay {
     display: none;
 } 

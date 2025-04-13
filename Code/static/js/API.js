@@ -3,7 +3,7 @@ let currentUsername = null;
 let messageStreams = {};
 let deleteInProgress = new Set();
 
-//fix question mark stuff
+//hyphen
 function toggleForm(formType){
     const loginForm = document.getElementById("loginPage");
     const registerForm = document.getElementById("registerPage");

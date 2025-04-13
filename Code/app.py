@@ -27,6 +27,7 @@ def register():
             return error
         cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))
         userID = cursor.lastrowid
+        conn.commit()
         session['userID'] = userID
         session['username'] = username
         meessageToAPI = jsonify({"signal": "ok", "user": {"id": userID, "username": username}})

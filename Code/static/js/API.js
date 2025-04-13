@@ -29,7 +29,7 @@ async function register() {
         if (dataFromServer.signal === "ok") {
             await login(username, password);
         } else {
-            document.getElementById("registerError").textContent = dataFromServer.message;
+            document.getElementById("registerError").textContent = dataFromServer.problem;
         }
     } catch (error) {
         document.getElementById("registerError").textContent = "A problem occurred during registration";
@@ -55,7 +55,7 @@ async function login(username = null, password = null) {
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         } else {
-            document.getElementById("loginError").textContent = dataFromServer.message;
+            document.getElementById("loginError").textContent = dataFromServer.problem;
         }
     } catch (error) {
         document.getElementById("loginError").textContent = "A problem occurred during login";
@@ -105,14 +105,14 @@ async function createChatroom() {
     const name = document.getElementById("chatroomName").value;
     if (!name) return;
     try {
-        const response = await fetch('/createChatroom', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/createChatroom", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name })
         });
         const dataFromServer = await response.json();
         if (dataFromServer.signal === "ok") {
-            document.getElementById("chatroomName").value = '';
+            document.getElementById("chatroomName").value = "";
             await loadChatrooms();
         } else {
             alert(dataFromServer.message);
@@ -127,14 +127,14 @@ async function joinChatroom() {
     const id = document.getElementById("chatroomID").value;
     if (!id) return;
     try {
-        const response = await fetch('/joinChatroom', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/joinChatroom", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ chatroomID: parseInt(id) })
         });
         const dataFromServer = await response.json();
         if (dataFromServer.signal === "ok") {
-            document.getElementById("chatroomID").value = '';
+            document.getElementById("chatroomID").value = "";
             await loadChatrooms();
         } else {
             alert(dataFromServer.message);
@@ -162,10 +162,10 @@ async function deleteChatroom(chatroomId) {
         const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
         if (deleteButton) {
             deleteButton.disabled = true;
-            deleteButton.style.opacity = '0.5';
+            deleteButton.style.opacity = "0.5";
         }
         //Calls server using curl to delete that chatroom
-        const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: 'DELETE' });
+        const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: "DELETE" });
         const dataFromServer = await response.json();
         //figures out if it worked
         if (dataFromServer.signal === "ok") {
@@ -175,10 +175,10 @@ async function deleteChatroom(chatroomId) {
             if (tab) {
                 //it begins to make tabs for next or previous chatroom to become its next and previous tabs
                 //  for the chatroom that got deleted
-                if (tab.classList.contains('active')) {
+                if (tab.classList.contains("active")) {
                     const nextTab = tab.nextElementSibling || tab.previousElementSibling;
                     if (nextTab) {
-                        const nextChatroomId = nextTab.getAttribute('data-chatroomID');
+                        const nextChatroomId = nextTab.getAttribute("data-chatroomID");
                         switchTab(nextChatroomId);
                     }
                 }
@@ -186,7 +186,7 @@ async function deleteChatroom(chatroomId) {
             }
             //deletes tabs and chatroomArea about that chatroom and shows home page if there are no more tabs left
             if (chatroomArea) chatroomArea.remove();
-            const tabs = document.querySelectorAll('.tab');
+            const tabs = document.querySelectorAll(".tab");
             if (tabs.length === 0) {
                 document.getElementById("tabContent").innerHTML = `
                     <div class="welcomeBanner">
@@ -207,20 +207,20 @@ async function deleteChatroom(chatroomId) {
         const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
         if (deleteButton) {
             deleteButton.disabled = false;
-            deleteButton.style.opacity = '1';
+            deleteButton.style.opacity = "1";
         }
     }
 }
 
 async function loadChatrooms() {
     try {
-        const response = await fetch('/chatrooms');
+        const response = await fetch("/chatrooms");
         const dataFromServer = await response.json();
         const tabsContainer = document.getElementById("chatroomTabs");
         const contentContainer = document.getElementById("tabContent");
         if (!tabsContainer || !contentContainer) return;
-        tabsContainer.innerHTML = '';
-        contentContainer.innerHTML = '';
+        tabsContainer.innerHTML = "";
+        contentContainer.innerHTML = "";
         if (!dataFromServer.chatrooms || dataFromServer.chatrooms.length === 0) {
             contentContainer.innerHTML = `
                 <div class="welcomeBanner">
@@ -230,9 +230,9 @@ async function loadChatrooms() {
             return;
         }
         dataFromServer.chatrooms.forEach((chatroom, index) => {
-            const tab = document.createElement('div');
-            tab.className = `tab ${index === 0 ? 'active' : ''}`;
-            tab.setAttribute('data-chatroomID', chatroom.id);
+            const tab = document.createElement("div");
+            tab.className = `tab ${index === 0 ? "active" : ""}`;
+            tab.setAttribute("data-chatroomID", chatroom.id);
             tab.onclick = () => switchTab(chatroom.id);
             //Renders tab for each classroom with delete button and chatroom id for invites
             tab.innerHTML = `
@@ -244,18 +244,18 @@ async function loadChatrooms() {
                             <button class="button buttonDelete" onclick="event.stopPropagation(); deleteChatroom(${chatroom.id})">
                                 Delete
                             </button>
-                        </div>` : ''}
+                        </div>` : ""}
                 </div>`;
             tabsContainer.appendChild(tab);
-            const chatroomArea = document.createElement('div');
-            chatroomArea.className = `chatroomSection ${index === 0 ? 'active' : ''}`;
+            const chatroomArea = document.createElement("div");
+            chatroomArea.className = `chatroomSection ${index === 0 ? "active" : ""}`;
             chatroomArea.id = `chat-${chatroom.id}`;
-            chatroomArea.setAttribute('data-chatroomID', chatroom.id);
+            chatroomArea.setAttribute("data-chatroomID", chatroom.id);
             //Renders HTML for sending messages
             chatroomArea.innerHTML = `
                 <div class="chatroomBanner">
                     <h3>${chatroom.name}</h3>
-                    ${chatroom.isAdmin ? `<small>Chatroom ID: ${chatroom.id}</small>` : ''}
+                    ${chatroom.isAdmin ? `<small>Chatroom ID: ${chatroom.id}</small>` : ""}
                 </div>
                 <div class="messages" id="messages-${chatroom.id}"></div>
                 <div class="messageBox">
@@ -263,10 +263,10 @@ async function loadChatrooms() {
                     <button class="button buttonMain" onclick="sendMessage(${chatroom.id})">Send</button>
                 </div>`;
             contentContainer.appendChild(chatroomArea);
-            const input = chatroomArea.querySelector('.messageBox input');
+            const input = chatroomArea.querySelector(".messageBox input");
             //takes input and looks for enter key or submit button and tries to send messsage with chatroom id
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
+            input.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
                     e.preventDefault();
                     sendMessage(chatroom.id);
                 }
@@ -280,18 +280,18 @@ async function loadChatrooms() {
 }
 
 function switchTab(chatroomId) {
-    document.querySelectorAll('.tab').forEach(tab => {
-        if (tab.getAttribute('data-chatroomID') == chatroomId) {
-            tab.classList.add('active');
+    document.querySelectorAll(".tab").forEach(tab => {
+        if (tab.getAttribute("data-chatroomID") == chatroomId) {
+            tab.classList.add("active");
         } else {
-            tab.classList.remove('active');
+            tab.classList.remove("active");
         }
     });
-    document.querySelectorAll('.chatroomSection').forEach(area => {
-        if (area.getAttribute('data-chatroomID') == chatroomId) {
-            area.classList.add('active');
+    document.querySelectorAll(".chatroomSection").forEach(area => {
+        if (area.getAttribute("data-chatroomID") == chatroomId) {
+            area.classList.add("active");
         } else {
-            area.classList.remove('active');
+            area.classList.remove("active");
         }
     });
 }
@@ -303,7 +303,7 @@ async function loadMessages(chatroomId) {
         if (dataFromServer.signal === "ok") {
             const messageContainer = document.querySelector(`#messages-${chatroomId}`);
             if (!messageContainer) return;
-            messageContainer.innerHTML = '';
+            messageContainer.innerHTML = "";
             dataFromServer.messages.forEach(message => appendMessage(chatroomId, message));
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
@@ -321,14 +321,14 @@ async function sendMessage(chatroomId) {
     try {
         //sends curl message to server to send message as well as a json of the message
         const response = await fetch(`/chatroom/${chatroomId}/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message })
         });
         const dataFromServer = await response.json();
         //waits for response and gives feedback accordingly
         if (dataFromServer.signal === "ok") {
-            input.value = '';
+            input.value = "";
         } else {
             alert(dataFromServer.message);
         }
@@ -377,9 +377,9 @@ function appendMessage(chatroomId, message) {
     if (!messageContainer) return;
     const existingMessage = messageContainer.querySelector(`[data-messageID="${message.id}"]`);
     if (existingMessage) return;
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${message.userID === currentUserId ? 'sent' : 'received'}`;
-    messageElement.setAttribute('data-messageID', message.id);
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${message.userID === currentUserId ? "sent" : "received"}`;
+    messageElement.setAttribute("data-messageID", message.id);
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `
         <div class="sender">${message.username}</div>
@@ -402,4 +402,4 @@ function cleanMessage(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-document.addEventListener('DOMContentLoaded', checkLogin);
+document.addEventListener("DOMContentLoaded", checkLogin);

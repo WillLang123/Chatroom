@@ -5,8 +5,8 @@ let deleteInProgress = new Set();
 
 //start here
 function toggleForm(formType) {
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
+    const loginForm = document.getElementById("loginPage");
+    const registerForm = document.getElementById("registerPage");
     if (formType === "login") {
         loginForm.style.display = "block";
         registerForm.style.display = "none";
@@ -17,8 +17,8 @@ function toggleForm(formType) {
 }
 
 async function register() {
-    const username = document.getElementById('register-username').value;
-    const password = document.getElementById('register-password').value;
+    const username = document.getElementById('registerUser').value;
+    const password = document.getElementById('registerPW').value;
     try {
         const response = await fetch("/register", {
             method: "POST",
@@ -26,20 +26,20 @@ async function register() {
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
+        if (dataFromServer.signal === "ok") {
             await login(username, password);
         } else {
-            document.getElementById("register-error").textContent = dataFromServer.message;
+            document.getElementById("registerError").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById("register-error").textContent = "A problem occurred during registration";
+        document.getElementById("registerError").textContent = "A problem occurred during registration";
     }
 }
 
 async function login(username = null, password = null) {
     if (!username || !password) {
-        username = document.getElementById('login-username').value;
-        password = document.getElementById('login-password').value;
+        username = document.getElementById('loginUser').value;
+        password = document.getElementById('loginPW').value;
     }
     try {
         const response = await fetch("/login", {
@@ -48,17 +48,17 @@ async function login(username = null, password = null) {
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
+        if (dataFromServer.signal === "ok") {
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
             currentUserId = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         } else {
-            document.getElementById("login-error").textContent = dataFromServer.message;
+            document.getElementById("loginError").textContent = dataFromServer.message;
         }
     } catch (error) {
-        document.getElementById("login-error").textContent = "A problem occurred during login";
+        document.getElementById("loginError").textContent = "A problem occurred during login";
     }
 }
 
@@ -66,17 +66,17 @@ async function logout() {
     try {
         const response = await fetch("/logout", { method: "POST" });
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
+        if (dataFromServer.signal === "ok") {
             document.getElementById("regLoginDisplay").style.display = "block";
             document.getElementById("chatroomsDisplay").style.display = "none";
             currentUserId = null;
             currentUsername = null;
-            document.getElementById("login-username").value = "";
-            document.getElementById("login-password").value = "";
-            document.getElementById("register-username").value = "";
-            document.getElementById("register-password").value = "";
-            document.getElementById("login-error").textContent = "";
-            document.getElementById("register-error").textContent = "";
+            document.getElementById("loginUser").value = "";
+            document.getElementById("loginPW").value = "";
+            document.getElementById("registerUser").value = "";
+            document.getElementById("registerPW").value = "";
+            document.getElementById("loginError").textContent = "";
+            document.getElementById("registerError").textContent = "";
             Object.values(messageStreams).forEach(stream => stream.close());
             messageStreams = {};
         }
@@ -89,7 +89,7 @@ async function checkLogin() {
     try {
         const response = await fetch("/checkLogin");
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok' && dataFromServer.authenticated) {
+        if (dataFromServer.signal === "ok" && dataFromServer.authenticated) {
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
             currentUserId = dataFromServer.user.id;
@@ -102,7 +102,7 @@ async function checkLogin() {
 }
 
 async function createChatroom() {
-    const name = document.getElementById('chatroom-name').value;
+    const name = document.getElementById("chatroomName").value;
     if (!name) return;
     try {
         const response = await fetch('/createChatroom', {
@@ -111,8 +111,8 @@ async function createChatroom() {
             body: JSON.stringify({ name })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
-            document.getElementById('chatroom-name').value = '';
+        if (dataFromServer.signal === "ok") {
+            document.getElementById("chatroomName").value = '';
             await loadChatrooms();
         } else {
             alert(dataFromServer.message);
@@ -124,7 +124,7 @@ async function createChatroom() {
 }
 
 async function joinChatroom() {
-    const id = document.getElementById('chatroom-id').value;
+    const id = document.getElementById("chatroomID").value;
     if (!id) return;
     try {
         const response = await fetch('/joinChatroom', {
@@ -133,14 +133,14 @@ async function joinChatroom() {
             body: JSON.stringify({ chatroomID: parseInt(id) })
         });
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
-            document.getElementById('chatroom-id').value = '';
+        if (dataFromServer.signal === "ok") {
+            document.getElementById("chatroomID").value = '';
             await loadChatrooms();
         } else {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Problem joining chatroom:', error);
+        console.error("Problem joining chatroom:");
         alert('Failed to join chatroom. Please try again.');
     }
 }
@@ -149,7 +149,7 @@ async function deleteChatroom(chatroomId) {
     // Check if chatroom is already being deleted
     if (deleteInProgress.has(chatroomId)) return;
     //Creates confirm option before it does so
-    if (!confirm('Are you sure you want to delete this chatroom?')) return;
+    if (!confirm("Are you sure you want to delete this chatroom?")) return;
     try {
         //add chatroomID in TODO delete list
         deleteInProgress.add(chatroomId);
@@ -159,7 +159,7 @@ async function deleteChatroom(chatroomId) {
             delete messageStreams[chatroomId];
         }
         //disables delete button for that specific chatroom tab
-        const deleteButton = document.querySelector(`#chatroom-tabs .tab[data-chatroom-id="${chatroomId}"] .buttonDelete`);
+        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
         if (deleteButton) {
             deleteButton.disabled = true;
             deleteButton.style.opacity = '0.5';
@@ -168,8 +168,8 @@ async function deleteChatroom(chatroomId) {
         const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: 'DELETE' });
         const dataFromServer = await response.json();
         //figures out if it worked
-        if (dataFromServer.signal === 'ok') {
-            const tab = document.querySelector(`.tab[data-chatroom-id="${chatroomId}"]`);
+        if (dataFromServer.signal === "ok") {
+            const tab = document.querySelector(`.tab[data-chatroomID="${chatroomId}"]`);
             const chatroomArea = document.getElementById(`chat-${chatroomId}`);
             //removes elements about that chatroom
             if (tab) {
@@ -178,7 +178,7 @@ async function deleteChatroom(chatroomId) {
                 if (tab.classList.contains('active')) {
                     const nextTab = tab.nextElementSibling || tab.previousElementSibling;
                     if (nextTab) {
-                        const nextChatroomId = nextTab.getAttribute('data-chatroom-id');
+                        const nextChatroomId = nextTab.getAttribute('data-chatroomID');
                         switchTab(nextChatroomId);
                     }
                 }
@@ -204,7 +204,7 @@ async function deleteChatroom(chatroomId) {
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
         deleteInProgress.delete(chatroomId);
-        const deleteButton = document.querySelector(`#chatroom-tabs .tab[data-chatroom-id="${chatroomId}"] .buttonDelete`);
+        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
         if (deleteButton) {
             deleteButton.disabled = false;
             deleteButton.style.opacity = '1';
@@ -216,7 +216,7 @@ async function loadChatrooms() {
     try {
         const response = await fetch('/chatrooms');
         const dataFromServer = await response.json();
-        const tabsContainer = document.getElementById('chatroom-tabs');
+        const tabsContainer = document.getElementById('chatroomTabs');
         const contentContainer = document.getElementById('tabContent');
         if (!tabsContainer || !contentContainer) return;
         tabsContainer.innerHTML = '';
@@ -232,7 +232,7 @@ async function loadChatrooms() {
         dataFromServer.chatrooms.forEach((chatroom, index) => {
             const tab = document.createElement('div');
             tab.className = `tab ${index === 0 ? 'active' : ''}`;
-            tab.setAttribute('data-chatroom-id', chatroom.id);
+            tab.setAttribute('data-chatroomID', chatroom.id);
             tab.onclick = () => switchTab(chatroom.id);
             //Renders tab for each classroom with delete button and chatroom id for invites
             tab.innerHTML = `
@@ -250,7 +250,7 @@ async function loadChatrooms() {
             const chatroomArea = document.createElement('div');
             chatroomArea.className = `chatroomSection ${index === 0 ? 'active' : ''}`;
             chatroomArea.id = `chat-${chatroom.id}`;
-            chatroomArea.setAttribute('data-chatroom-id', chatroom.id);
+            chatroomArea.setAttribute('data-chatroomID', chatroom.id);
             //Renders HTML for sending messages
             chatroomArea.innerHTML = `
                 <div class="chatroomBanner">
@@ -260,7 +260,7 @@ async function loadChatrooms() {
                 <div class="messages" id="messages-${chatroom.id}"></div>
                 <div class="messageBox">
                     <input type="text" placeholder="Type your message...">
-                    <button class="button buttonOne" onclick="sendMessage(${chatroom.id})">Send</button>
+                    <button class="button buttonMain" onclick="sendMessage(${chatroom.id})">Send</button>
                 </div>`;
             contentContainer.appendChild(chatroomArea);
             const input = chatroomArea.querySelector('.messageBox input');
@@ -281,14 +281,14 @@ async function loadChatrooms() {
 
 function switchTab(chatroomId) {
     document.querySelectorAll('.tab').forEach(tab => {
-        if (tab.getAttribute('data-chatroom-id') == chatroomId) {
+        if (tab.getAttribute('data-chatroomID') == chatroomId) {
             tab.classList.add('active');
         } else {
             tab.classList.remove('active');
         }
     });
     document.querySelectorAll('.chatroomSection').forEach(area => {
-        if (area.getAttribute('data-chatroom-id') == chatroomId) {
+        if (area.getAttribute('data-chatroomID') == chatroomId) {
             area.classList.add('active');
         } else {
             area.classList.remove('active');
@@ -300,7 +300,7 @@ async function loadMessages(chatroomId) {
     try {
         const response = await fetch(`/chatroom/${chatroomId}/messages`);
         const dataFromServer = await response.json();
-        if (dataFromServer.signal === 'ok') {
+        if (dataFromServer.signal === "ok") {
             const messageContainer = document.querySelector(`#messages-${chatroomId}`);
             if (!messageContainer) return;
             messageContainer.innerHTML = '';
@@ -327,7 +327,7 @@ async function sendMessage(chatroomId) {
         });
         const dataFromServer = await response.json();
         //waits for response and gives feedback accordingly
-        if (dataFromServer.signal === 'ok') {
+        if (dataFromServer.signal === "ok") {
             input.value = '';
         } else {
             alert(dataFromServer.message);
@@ -375,11 +375,11 @@ function setupMessageStream(chatroomId) {
 function appendMessage(chatroomId, message) {
     const messageContainer = document.querySelector(`#messages-${chatroomId}`);
     if (!messageContainer) return;
-    const existingMessage = messageContainer.querySelector(`[data-message-id="${message.id}"]`);
+    const existingMessage = messageContainer.querySelector(`[data-messageID="${message.id}"]`);
     if (existingMessage) return;
     const messageElement = document.createElement('div');
     messageElement.className = `message ${message.userID === currentUserId ? 'sent' : 'received'}`;
-    messageElement.setAttribute('data-message-id', message.id);
+    messageElement.setAttribute('data-messageID', message.id);
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `
         <div class="sender">${message.username}</div>

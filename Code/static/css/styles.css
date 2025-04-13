@@ -79,7 +79,7 @@ body {
     white-space: nowrap;
 }
 
-.buttonOne {
+.buttonMain {
     background: #3498db;
     color: white;
     width: 100%;
@@ -113,7 +113,7 @@ body {
     text-decoration: underline;
 }
 
-.action-buttons {
+.actionButton {
     display: flex;
     gap: 20px;
 }

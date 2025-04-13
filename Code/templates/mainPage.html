@@ -12,36 +12,36 @@
         <div id="regLoginDisplay">
             <div class="regLoginContainer">
                 <!-- Login Form -->
-                <div id="login-form">
+                <div id="loginPage">
                     <h2>Login</h2>
                     <div class="formStyles">
-                        <label for="login-username">Username</label>
-                        <input type="text" id="login-username">
+                        <label for="loginUser">Username</label>
+                        <input type="text" id="loginUser">
                     </div>
                     <div class="formStyles">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password">
+                        <label for="loginPW">Password</label>
+                        <input type="password" id="loginPW">
                     </div>
-                    <button class="button buttonOne" onclick="login()">Login</button>
-                    <div id="login-error" class="errorMessage"></div>
+                    <button class="button buttonMain" onclick="login()">Login</button>
+                    <div id="loginError" class="errorMessage"></div>
                     <p class="toggleForm">
                         Don't have an account? <a href="#" onclick="toggleForm('register')">Register</a>
                     </p>
                 </div>
                 
                 <!-- Register Form -->
-                <div id="register-form" style="display: none;">
+                <div id="registerPage" style="display: none;">
                     <h2>Register</h2>
                     <div class="formStyles">
-                        <label for="register-username">Username</label>
-                        <input type="text" id="register-username">
+                        <label for="registerUser">Username</label>
+                        <input type="text" id="registerUser">
                     </div>
                     <div class="formStyles">
-                        <label for="register-password">Password</label>
-                        <input type="password" id="register-password">
+                        <label for="registerPW">Password</label>
+                        <input type="password" id="registerPW">
                     </div>
-                    <button class="button buttonOne" onclick="register()">Register</button>
-                    <div id="register-error" class="errorMessage"></div>
+                    <button class="button buttonMain" onclick="register()">Register</button>
+                    <div id="registerError" class="errorMessage"></div>
                     <p class="toggleForm">
                         Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
                     </p>
@@ -53,20 +53,20 @@
         <div id="chatroomsDisplay">
             <div class="header">
                 <h1>Chatroom Project</h1>
-                <div class="action-buttons">
+                <div class="actionButton">
                     <div class="formStyles">
                         <button class="button buttonCreate" onclick="createChatroom()">Create</button>
-                        <input type="text" id="chatroom-name" placeholder="Enter chatroom name">
+                        <input type="text" id="chatroomName" placeholder="Enter chatroom name">
                     </div>
                     <div class="formStyles">
                         <button class="button buttonJoin" onclick="joinChatroom()">Join</button>
-                        <input type="text" id="chatroom-id" placeholder="Enter chatroom ID">
+                        <input type="text" id="chatroomID" placeholder="Enter chatroom ID">
                     </div>
                     <button class="button buttonDelete" onclick="logout()">Logout</button>
                 </div>
             </div>
             
-            <div class="tabs" id="chatroom-tabs"></div>
+            <div class="tabs" id="chatroomTabs"></div>
             
             <div class="tabContent" id="tabContent"></div>
         </div>

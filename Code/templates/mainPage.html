@@ -8,10 +8,27 @@
 </head>
 <body>
     <div class="container">
-        <!-- Login Section -->
+        <!-- Login Parts -->
         <div id="regLoginDisplay">
             <div class="regLoginContainer">
-                <!-- Login Form -->
+                <!-- Register Page -->
+                <div id="registerPage" style="display: none;">
+                    <h2>Register</h2>
+                    <div class="formStyles">
+                        <label for="registerUser">Username</label>
+                        <input type="text" id="registerUser">
+                    </div>
+                    <div class="formStyles">
+                        <label for="registerPW">Password</label>
+                        <input type="password" id="registerPW">
+                    </div>
+                    <button class="button buttonMain" onclick="register()">Make Account</button>
+                    <div id="registerError" class="errorMessage"></div>
+                    <p class="toggleForm">
+                        Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
+                    </p>
+                </div>
+                <!-- Login Page -->
                 <div id="loginPage">
                     <h2>Login</h2>
                     <div class="formStyles">
@@ -25,31 +42,13 @@
                     <button class="button buttonMain" onclick="login()">Login</button>
                     <div id="loginError" class="errorMessage"></div>
                     <p class="toggleForm">
-                        Don't have an account? <a href="#" onclick="toggleForm('register')">Register</a>
+                        Make an account: <a href="#" onclick="toggleForm('register')">Register</a>
                     </p>
                 </div>
                 
-                <!-- Register Form -->
-                <div id="registerPage" style="display: none;">
-                    <h2>Register</h2>
-                    <div class="formStyles">
-                        <label for="registerUser">Username</label>
-                        <input type="text" id="registerUser">
-                    </div>
-                    <div class="formStyles">
-                        <label for="registerPW">Password</label>
-                        <input type="password" id="registerPW">
-                    </div>
-                    <button class="button buttonMain" onclick="register()">Register</button>
-                    <div id="registerError" class="errorMessage"></div>
-                    <p class="toggleForm">
-                        Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
-                    </p>
-                </div>
             </div>
         </div>
-        
-        <!-- Chat Section -->
+        <!-- Chatroom app -->
         <div id="chatroomsDisplay">
             <div class="header">
                 <h1>Chatroom Project</h1>
@@ -62,16 +61,13 @@
                         <button class="button buttonJoin" onclick="joinChatroom()">Join</button>
                         <input type="text" id="chatroomID" placeholder="Enter chatroom ID">
                     </div>
-                    <button class="button buttonDelete" onclick="logout()">Logout</button>
+                    <button class="button buttonDelete" onclick="logout()">Log out</button>
                 </div>
             </div>
-            
             <div class="tabs" id="chatroomTabs"></div>
-            
             <div class="tabContent" id="tabContent"></div>
         </div>
     </div>
-    
     <script src="{{ url_for('static', filename='js/API.js') }}"></script>
 </body>
 </html>

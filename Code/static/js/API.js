@@ -3,7 +3,7 @@ let currentUsername = null;
 let messageStreams = {};
 let deleteInProgress = new Set();
 
-//start here
+//fix question mark stuff
 function toggleForm(formType) {
     const loginForm = document.getElementById("loginPage");
     const registerForm = document.getElementById("registerPage");
@@ -149,7 +149,7 @@ async function deleteChatroom(chatroomId) {
     // Check if chatroom is already being deleted
     if (deleteInProgress.has(chatroomId)) return;
     //Creates confirm option before it does so
-    if (!confirm("Are you sure you want to delete this chatroom?")) return;
+    if (!confirm("Are you sure about deleting this chatroom?")) return;
     try {
         //add chatroomID in TODO delete list
         deleteInProgress.add(chatroomId);

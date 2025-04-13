@@ -17,8 +17,8 @@ function toggleForm(formType) {
 }
 
 async function register() {
-    const username = document.getElementById('registerUser').value;
-    const password = document.getElementById('registerPW').value;
+    const username = document.getElementById("registerUser").value;
+    const password = document.getElementById("registerPW").value;
     try {
         const response = await fetch("/register", {
             method: "POST",
@@ -38,8 +38,8 @@ async function register() {
 
 async function login(username = null, password = null) {
     if (!username || !password) {
-        username = document.getElementById('loginUser').value;
-        password = document.getElementById('loginPW').value;
+        username = document.getElementById("loginUser").value;
+        password = document.getElementById("loginPW").value;
     }
     try {
         const response = await fetch("/login", {
@@ -118,8 +118,8 @@ async function createChatroom() {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Problem creating chatroom:', error);
-        alert('Failed to create chatroom. Please try again.');
+        console.error("Problem creating chatroom:", error);
+        alert("Failed to create chatroom. Please try again.");
     }
 }
 
@@ -140,8 +140,8 @@ async function joinChatroom() {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error("Problem joining chatroom:");
-        alert('Failed to join chatroom. Please try again.');
+        console.error("Problem joining chatroom:", error);
+        alert("Failed to join chatroom. Please try again.");
     }
 }
 
@@ -188,19 +188,19 @@ async function deleteChatroom(chatroomId) {
             if (chatroomArea) chatroomArea.remove();
             const tabs = document.querySelectorAll('.tab');
             if (tabs.length === 0) {
-                document.getElementById('tabContent').innerHTML = `
+                document.getElementById("tabContent").innerHTML = `
                     <div class="welcomeBanner">
                         <h2>Welcome to the Chat App!</h2>
                         <p>Create a new chatroom or join an existing one to start chatting.</p>
                     </div>`;
             }
         } else {
-            alert(dataFromServer.message || 'Failed to delete chatroom');
+            alert(dataFromServer.message || "Failed to delete chatroom");
         }
     } catch (error) {
         //shows error if there was a problem
-        console.error('Problem deleting chatroom:', error);
-        alert('Failed to delete chatroom. Please try again.');
+        console.error("Problem deleting chatroom:", error);
+        alert("Failed to delete chatroom. Please try again.");
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
         deleteInProgress.delete(chatroomId);
@@ -216,8 +216,8 @@ async function loadChatrooms() {
     try {
         const response = await fetch('/chatrooms');
         const dataFromServer = await response.json();
-        const tabsContainer = document.getElementById('chatroomTabs');
-        const contentContainer = document.getElementById('tabContent');
+        const tabsContainer = document.getElementById("chatroomTabs");
+        const contentContainer = document.getElementById("tabContent");
         if (!tabsContainer || !contentContainer) return;
         tabsContainer.innerHTML = '';
         contentContainer.innerHTML = '';
@@ -275,7 +275,7 @@ async function loadChatrooms() {
             setupMessageStream(chatroom.id);
         });
     } catch (error) {
-        console.error('Problem loading chatrooms:', error);
+        console.error("Problem loading chatrooms:", error);
     }
 }
 
@@ -308,7 +308,7 @@ async function loadMessages(chatroomId) {
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
     } catch (error) {
-        console.error('Problem loading messages:', error);
+        console.error("Problem loading messages:", error);
     }
 }
 
@@ -333,8 +333,8 @@ async function sendMessage(chatroomId) {
             alert(dataFromServer.message);
         }
     } catch (error) {
-        console.error('Problem sending message:', error);
-        alert('Failed to send message. Please try again.');
+        console.error("Problem sending message:", error);
+        alert("Failed to send message. Please try again.");
     }
 }
 
@@ -351,7 +351,7 @@ function setupMessageStream(chatroomId) {
             if (message.error) return;
             appendMessage(chatroomId, message);
         } catch (error) {
-            console.error('Problem processing message:', error);
+            console.error("Problem processing message:", error);
         }
     };
     eventSource.onerror = (error) => {

@@ -231,31 +231,49 @@ async function loadChatrooms() {
         }
         dataFromServer.chatrooms.forEach((chatroom, index) => {
             const tab = document.createElement("div");
-            tab.className = `tab ${index === 0 ? "active" : ""}`;
+            if(index === 0){
+                tab.className = "tab active";
+            } else {
+                tab.className = "tab";
+            }
             tab.setAttribute("data-chatroomID", chatroom.id);
             tab.onclick = () => switchTab(chatroom.id);
             //Renders tab for each classroom with delete button and chatroom id for invites
-            tab.innerHTML = `
-                <div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
-                    <span>${chatroom.name}</span>
-                    ${chatroom.isAdmin ? `
+            if(chatroom.isAdmin){
+                HTMLBlock = `
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
                             <button class="button buttonDelete" onclick="event.stopPropagation(); deleteChatroom(${chatroom.id})">
                                 Delete
                             </button>
-                        </div>` : ""}
-                </div>`;
+                        </div>`
+            } else {
+                HTMLBlock = ""
+            }
+            tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
+                                <span>${chatroom.name}</span>
+                                ${HTMLBlock}
+                            </div>`;
             tabsContainer.appendChild(tab);
             const chatroomArea = document.createElement("div");
-            chatroomArea.className = `chatroomSection ${index === 0 ? "active" : ""}`;
+            if(index === 0){
+                chatroomArea.className = "chatroomSection active";
+            } else {    
+                chatroomArea.className = "chatroomSection";
+            }
             chatroomArea.id = `chat-${chatroom.id}`;
             chatroomArea.setAttribute("data-chatroomID", chatroom.id);
             //Renders HTML for sending messages
+            HTMLBlock = ""
+            if(chatroom.isAdmin){
+                HTMLBlock = `<small>Chatroom ID: ${chatroom.id}</small>`
+            } else {
+                HTMLBlock = ""
+            }
             chatroomArea.innerHTML = `
                 <div class="chatroomBanner">
                     <h3>${chatroom.name}</h3>
-                    ${chatroom.isAdmin ? `<small>Chatroom ID: ${chatroom.id}</small>` : ""}
+                    ${HTMLBlock}
                 </div>
                 <div class="messages" id="messages-${chatroom.id}"></div>
                 <div class="messageBox">
@@ -378,7 +396,11 @@ function appendMessage(chatroomId, message) {
     const existingMessage = messageContainer.querySelector(`[data-messageID="${message.id}"]`);
     if (existingMessage) return;
     const messageElement = document.createElement("div");
-    messageElement.className = `message ${message.userID === currentUserId ? "sent" : "received"}`;
+    if(message.userID === currentUserId){
+        messageElement.className = "message sent";
+    } else {
+        messageElement.className = "message received";
+    }
     messageElement.setAttribute("data-messageID", message.id);
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `

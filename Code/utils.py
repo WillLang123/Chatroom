@@ -1,7 +1,7 @@
 import sqlite3
 
 def quickCursor():
-    connection = sqlite3.connect('chatroom.db')
+    connection = sqlite3.connect("chatroom.db")
     cursor = connection.cursor()
     return cursor, connection
 
@@ -12,7 +12,7 @@ def quickClose(cursor, connection):
 def createMessageTable(chatroomID):
     cursor, conn = quickCursor()
     try:
-        cursor.execute(f'''CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (userID) REFERENCES users (id))''')
+        cursor.execute(f'CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (userID) REFERENCES users (id))')
         conn.commit()
     except Exception as e:
         print("Error creating message table")

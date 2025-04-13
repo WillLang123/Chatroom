@@ -145,34 +145,34 @@ async function joinChatroom(){
     }
 }
 
-async function deleteChatroom(chatroomId){
+async function deleteChatroom(chatroomID){
     // Check if chatroom is already being deleted
-    if(deleteInProgress.has(chatroomId)) return;
+    if(deleteInProgress.has(chatroomID)) return;
     //Creates confirm option before it does so
     if(!confirm("Are you sure about deleting this chatroom?")){
         return;
     }
     try{
         //add chatroomID in TODO delete list
-        deleteInProgress.add(chatroomId);
+        deleteInProgress.add(chatroomID);
         //Close the message stream about it and delete it
-        if(messageStreams[chatroomId]){
-            messageStreams[chatroomId].close();
-            delete messageStreams[chatroomId];
+        if(messageStreams[chatroomID]){
+            messageStreams[chatroomID].close();
+            delete messageStreams[chatroomID];
         }
         //disables delete button for that specific chatroom tab
-        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
+        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomID}"] .buttonDelete`);
         if(deleteButton){
             deleteButton.disabled = true;
             deleteButton.style.opacity = "0.5";
         }
         //Calls server using curl to delete that chatroom
-        const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: "DELETE" });
+        const response = await fetch(`/deleteChatroom/${chatroomID}`, { method: "DELETE" });
         const dataFromServer = await response.json();
         //figures out if it worked
         if(Object.is(dataFromServer.signal,"ok")){
-            const tab = document.querySelector(`.tab[data-chatroomID="${chatroomId}"]`);
-            const chatroomArea = document.getElementById(`chat-${chatroomId}`);
+            const tab = document.querySelector(`.tab[data-chatroomID="${chatroomID}"]`);
+            const chatroomArea = document.getElementById(`chat-${chatroomID}`);
             //removes elements about that chatroom
             if(tab){
                 //it begins to make tabs for next or previous chatroom to become its next and previous tabs
@@ -180,8 +180,8 @@ async function deleteChatroom(chatroomId){
                 if(tab.classList.contains("active")){
                     const nextTab = tab.nextElementSibling || tab.previousElementSibling;
                     if(nextTab){
-                        const nextChatroomId = nextTab.getAttribute("data-chatroomID");
-                        switchTab(nextChatroomId);
+                        const nextChatroomID = nextTab.getAttribute("data-chatroomID");
+                        switchTab(nextChatroomID);
                     }
                 }
                 tab.remove();
@@ -205,8 +205,8 @@ async function deleteChatroom(chatroomId){
         alert("Failed to delete chatroom. Please try again.");
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
-        deleteInProgress.delete(chatroomId);
-        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomId}"] .buttonDelete`);
+        deleteInProgress.delete(chatroomID);
+        const deleteButton = document.querySelector(`#chatroomTabs .tab[data-chatroomID="${chatroomID}"] .buttonDelete`);
         if(deleteButton){
             deleteButton.disabled = false;
             deleteButton.style.opacity = "1";
@@ -299,16 +299,16 @@ async function loadChatrooms(){
     }
 }
 
-function switchTab(chatroomId){
+function switchTab(chatroomID){
     document.querySelectorAll(".tab").forEach(tab => {
-        if(tab.getAttribute("data-chatroomID") == chatroomId){
+        if(tab.getAttribute("data-chatroomID") == chatroomID){
             tab.classList.add("active");
         } else {
             tab.classList.remove("active");
         }
     });
     document.querySelectorAll(".chatroomSection").forEach(area => {
-        if(area.getAttribute("data-chatroomID") == chatroomId){
+        if(area.getAttribute("data-chatroomID") == chatroomID){
             area.classList.add("active");
         } else {
             area.classList.remove("active");
@@ -316,15 +316,15 @@ function switchTab(chatroomId){
     });
 }
 
-async function loadMessages(chatroomId){
+async function loadMessages(chatroomID){
     try{
-        const response = await fetch(`/chatroom/${chatroomId}/messages`);
+        const response = await fetch(`/chatroom/${chatroomID}/messages`);
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok")){
-            const messageContainer = document.querySelector(`#messages-${chatroomId}`);
+            const messageContainer = document.querySelector(`#messages-${chatroomID}`);
             if(!messageContainer) return;
             messageContainer.innerHTML = "";
-            dataFromServer.messages.forEach(message => appendMessage(chatroomId, message));
+            dataFromServer.messages.forEach(message => appendMessage(chatroomID, message));
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
     } catch(error){
@@ -332,15 +332,15 @@ async function loadMessages(chatroomId){
     }
 }
 
-async function sendMessage(chatroomId){
-    const input = document.querySelector(`#chat-${chatroomId} .messageBox input`);
+async function sendMessage(chatroomID){
+    const input = document.querySelector(`#chat-${chatroomID} .messageBox input`);
     const message = input.value.trim();
     //trims input from HTML
     if(!message) return;
     //breaks if input is empty
     try{
         //sends curl message to server to send message as well as a json of the message
-        const response = await fetch(`/chatroom/${chatroomId}/send`, {
+        const response = await fetch(`/chatroom/${chatroomID}/send`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message })
@@ -358,42 +358,42 @@ async function sendMessage(chatroomId){
     }
 }
 
-function setupMessageStream(chatroomId){
-    if(messageStreams[chatroomId]){
-        messageStreams[chatroomId].close();
-        delete messageStreams[chatroomId];
+function setupMessageStream(chatroomID){
+    if(messageStreams[chatroomID]){
+        messageStreams[chatroomID].close();
+        delete messageStreams[chatroomID];
     }
     //reopens message stream if it is already opened
-    const eventSource = new EventSource(`/chatroom/${chatroomId}/stream`);
+    const eventSource = new EventSource(`/chatroom/${chatroomID}/stream`);
     eventSource.onmessage = (event) => {
         try{
             const message = JSON.parse(event.data);
             if(message.error) return;
-            appendMessage(chatroomId, message);
+            appendMessage(chatroomID, message);
         } catch(error){
             console.error("Problem processing message:", error);
         }
     };
     eventSource.onerror = (error) => {
-        const chatroomArea = document.getElementById(`chat-${chatroomId}`);
+        const chatroomArea = document.getElementById(`chat-${chatroomID}`);
         if(!chatroomArea){
             eventSource.close();
-            delete messageStreams[chatroomId];
+            delete messageStreams[chatroomID];
             return;
         }
         eventSource.close();
-        delete messageStreams[chatroomId];
+        delete messageStreams[chatroomID];
         setTimeout(() => {
-            if(document.getElementById(`chat-${chatroomId}`)){
-                setupMessageStream(chatroomId);
+            if(document.getElementById(`chat-${chatroomID}`)){
+                setupMessageStream(chatroomID);
             }
         }, 5000);
     };
-    messageStreams[chatroomId] = eventSource;
+    messageStreams[chatroomID] = eventSource;
 }
 
-function appendMessage(chatroomId, message){
-    const messageContainer = document.querySelector(`#messages-${chatroomId}`);
+function appendMessage(chatroomID, message){
+    const messageContainer = document.querySelector(`#messages-${chatroomID}`);
     if(!messageContainer) return;
     const existingMessage = messageContainer.querySelector(`[data-messageID="${message.id}"]`);
     if(existingMessage) return;

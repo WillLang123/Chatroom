@@ -7,7 +7,7 @@ let deleteInProgress = new Set();
 function toggleForm(formType){
     const loginForm = document.getElementById("loginPage");
     const registerForm = document.getElementById("registerPage");
-    if(formType === "login"){
+    if(Object.is(formType,"login")){
         loginForm.style.display = "block";
         registerForm.style.display = "none";
     } else {
@@ -26,7 +26,7 @@ async function register(){
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             await login(username, password);
         } else {
             document.getElementById("registerError").textContent = dataFromServer.problem;
@@ -48,7 +48,7 @@ async function login(username = null, password = null){
             body: JSON.stringify({ username, password })
         });
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
             currentUserId = dataFromServer.user.id;
@@ -66,7 +66,7 @@ async function logout(){
     try{
         const response = await fetch("/logout", { method: "POST" });
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("regLoginDisplay").style.display = "block";
             document.getElementById("chatroomsDisplay").style.display = "none";
             currentUserId = null;
@@ -89,7 +89,7 @@ async function checkLogin(){
     try{
         const response = await fetch("/checkLogin");
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok" && dataFromServer.authenticated){
+        if(Object.is(dataFromServer.signal,"ok") && dataFromServer.authenticated){
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
             currentUserId = dataFromServer.user.id;
@@ -111,7 +111,7 @@ async function createChatroom(){
             body: JSON.stringify({ name })
         });
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("chatroomName").value = "";
             await loadChatrooms();
         } else {
@@ -133,7 +133,7 @@ async function joinChatroom(){
             body: JSON.stringify({ chatroomID: parseInt(id) })
         });
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("chatroomID").value = "";
             await loadChatrooms();
         } else {
@@ -170,7 +170,7 @@ async function deleteChatroom(chatroomId){
         const response = await fetch(`/deleteChatroom/${chatroomId}`, { method: "DELETE" });
         const dataFromServer = await response.json();
         //figures out if it worked
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             const tab = document.querySelector(`.tab[data-chatroomID="${chatroomId}"]`);
             const chatroomArea = document.getElementById(`chat-${chatroomId}`);
             //removes elements about that chatroom
@@ -189,7 +189,7 @@ async function deleteChatroom(chatroomId){
             //deletes tabs and chatroomArea about that chatroom and shows home page if there are no more tabs left
             if(chatroomArea) chatroomArea.remove();
             const tabs = document.querySelectorAll(".tab");
-            if(tabs.length === 0){
+            if(Object.is(tabs.length,0)){
                 document.getElementById("tabContent").innerHTML = `
                     <div class="welcomeBanner">
                         <h2>Welcome to the Chat App!</h2>
@@ -223,7 +223,7 @@ async function loadChatrooms(){
         if(!tabsContainer || !contentContainer) return;
         tabsContainer.innerHTML = "";
         contentContainer.innerHTML = "";
-        if(!dataFromServer.chatrooms || dataFromServer.chatrooms.length === 0){
+        if(!dataFromServer.chatrooms || (Object.is(dataFromServer.chatrooms.length,0))){
             contentContainer.innerHTML = `
                 <div class="welcomeBanner">
                     <h2>Welcome to the Chat App!</h2>
@@ -233,7 +233,7 @@ async function loadChatrooms(){
         }
         dataFromServer.chatrooms.forEach((chatroom, index) => {
             const tab = document.createElement("div");
-            if(index === 0){
+            if(Object.is(index,0)){
                 tab.className = "tab active";
             } else {
                 tab.className = "tab";
@@ -258,7 +258,7 @@ async function loadChatrooms(){
                             </div>`;
             tabsContainer.appendChild(tab);
             const chatroomArea = document.createElement("div");
-            if(index === 0){
+            if(Object.is(index,0)){
                 chatroomArea.className = "chatroomSection active";
             } else {    
                 chatroomArea.className = "chatroomSection";
@@ -286,7 +286,7 @@ async function loadChatrooms(){
             const input = chatroomArea.querySelector(".messageBox input");
             //takes input and looks for enter key or submit button and tries to send messsage with chatroom id
             input.addEventListener("keypress", (e) => {
-                if(e.key === "Enter"){
+                if(Object.is(e.key,"Enter")){
                     e.preventDefault();
                     sendMessage(chatroom.id);
                 }
@@ -320,7 +320,7 @@ async function loadMessages(chatroomId){
     try{
         const response = await fetch(`/chatroom/${chatroomId}/messages`);
         const dataFromServer = await response.json();
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             const messageContainer = document.querySelector(`#messages-${chatroomId}`);
             if(!messageContainer) return;
             messageContainer.innerHTML = "";
@@ -347,7 +347,7 @@ async function sendMessage(chatroomId){
         });
         const dataFromServer = await response.json();
         //waits for response and gives feedback accordingly
-        if(dataFromServer.signal === "ok"){
+        if(Object.is(dataFromServer.signal,"ok")){
             input.value = "";
         } else {
             alert(dataFromServer.message);
@@ -398,7 +398,7 @@ function appendMessage(chatroomId, message){
     const existingMessage = messageContainer.querySelector(`[data-messageID="${message.id}"]`);
     if(existingMessage) return;
     const messageElement = document.createElement("div");
-    if(message.userID === currentUserId){
+    if(Object.is(message.userID,currentUserId)){
         messageElement.className = "message sent";
     } else {
         messageElement.className = "message received";

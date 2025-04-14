@@ -32,7 +32,7 @@ async function register(){
             document.getElementById("registerError").textContent = dataFromServer.problem;
         }
     } catch(error){
-        document.getElementById("registerError").textContent = "A problem occurred during registration";
+        document.getElementById("registerError").textContent = "A problem occurred when registering account";
     }
 }
 
@@ -58,7 +58,7 @@ async function login(username=null, password=null){
             document.getElementById("loginError").textContent = dataFromServer.problem;
         }
     } catch(error){
-        document.getElementById("loginError").textContent = "A problem occurred during login";
+        document.getElementById("loginError").textContent = "A problem occurred when logging in";
     }
 }
 
@@ -197,8 +197,8 @@ async function deleteChatroom(chatroomID){
             } 
             const tabs = document.querySelectorAll(".tab");
             const HTMLBlock = `<div class="welcomeBanner">
-                                    <h2>Welcome to the Chatroom Website</h2>
-                                    <p>Either use an ID to join or create a chatroom to get started.</p>
+                                    <h2>Welcome to the COSC 4360-01 chatroom website</h2>
+                                    <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                                 </div>`
             if(Object.is(tabs.length,0)){
                 document.getElementById("tabContent").innerHTML = HTMLBlock;
@@ -264,7 +264,7 @@ async function leaveChatroom(chatroomID) {
             if (Object.is(tabs.length, 0)) {
                 document.getElementById("tabContent").innerHTML = `<div class="welcomeBanner">
                     <h2>Welcome to the COSC 4360-01 chatroom website</h2>
-                    <p>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</p>
+                    <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                 </div>`;
             }
         } else {
@@ -296,7 +296,7 @@ async function loadChatrooms(){
         if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
             HTMLBlock = `<div class="welcomeBanner">
                             <h2>Welcome to the COSC 4360-01 chatroom website</h2>
-                            <p>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</p>
+                            <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                         </div>`;
             contentContainer.innerHTML = HTMLBlock;
             return;

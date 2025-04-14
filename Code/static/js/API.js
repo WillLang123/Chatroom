@@ -2,6 +2,10 @@ let currentUserID = null;
 let currentUsername = null;
 let messageStreams = {};
 let DBMutex = new Set();
+const welcomeBackground = `<div class="welcomeBanner">
+                                <h2>Welcome to the COSC 4360-01 chatroom website</h2>
+                                <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
+                            </div>`;
 
 //hyphen
 function toggleForm(formType){
@@ -196,12 +200,8 @@ async function deleteChatroom(chatroomID){
                 chatroomArea.remove();
             } 
             const tabs = document.querySelectorAll(".tab");
-            const HTMLBlock = `<div class="welcomeBanner">
-                                    <h2>Welcome to the COSC 4360-01 chatroom website</h2>
-                                    <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
-                                </div>`
             if(Object.is(tabs.length,0)){
-                document.getElementById("tabContent").innerHTML = HTMLBlock;
+                document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
         } else {
             alert(dataFromServer.message || "Failed to delete chatroom");
@@ -262,10 +262,7 @@ async function leaveChatroom(chatroomID) {
             }
             const tabs = document.querySelectorAll(".tab");
             if (Object.is(tabs.length, 0)) {
-                document.getElementById("tabContent").innerHTML = `<div class="welcomeBanner">
-                    <h2>Welcome to the COSC 4360-01 chatroom website</h2>
-                    <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
-                </div>`;
+                document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
         } else {
             alert(data.problem);
@@ -294,11 +291,7 @@ async function loadChatrooms(){
         tabsContainer.innerHTML = "";
         contentContainer.innerHTML = "";
         if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
-            HTMLBlock = `<div class="welcomeBanner">
-                            <h2>Welcome to the COSC 4360-01 chatroom website</h2>
-                            <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
-                        </div>`;
-            contentContainer.innerHTML = HTMLBlock;
+            contentContainer.innerHTML = welcomeBackground;
             return;
         }
         dataFromServer.chatrooms.forEach((chatroom, index) => {
@@ -311,26 +304,24 @@ async function loadChatrooms(){
             tab.setAttribute("chatroomID", chatroom.id);
             tab.onclick = () => switchTab(chatroom.id);
             //Renders tab for each classroom with delete button and chatroom id for invites
+            let buttonType, buttonAction, buttonWord;
             if(chatroom.isAdmin){
-                HTMLBlock = `
-                        <div class=deleteChatContainer">
-                            <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
-                            <button class="button buttonDelete" onclick="event.stopPropagation(); deleteChatroom(${chatroom.id})">
-                                Delete
-                            </button>
-                        </div>`
+                buttonType = "buttonDelete";
+                buttonAction = "deleteChatroom";
+                buttonWord = "Delete";
             } else {
-                HTMLBlock = `
-                        <div class=deleteChatContainer">
-                            <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
-                            <button class="button buttonLeave" onclick="event.stopPropagation(); leaveChatroom(${chatroom.id})">
-                                Leave
-                            </button>
-                        </div>`
+                buttonType = "buttonLeave";
+                buttonAction = "leaveChatroom";
+                buttonWord = "Leave";
             }
             tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
                                 <span>${chatroom.name}</span>
-                                ${HTMLBlock}
+                                <div class="deleteChatContainer">
+                                    <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
+                                    <button class="button ${buttonType}" onclick="event.stopPropagation(); ${buttonAction}(${chatroom.id})">
+                                        ${buttonWord}
+                                    </button>
+                                </div>
                             </div>`;
             tabsContainer.appendChild(tab);
             const chatroomArea = document.createElement("div");

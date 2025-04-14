@@ -1,7 +1,7 @@
-let currentUserId = null;
+let currentUserID = null;
 let currentUsername = null;
 let messageStreams = {};
-let deleteInProgress = new Set();
+let DBMutex = new Set();
 
 //hyphen
 function toggleForm(formType){
@@ -51,7 +51,7 @@ async function login(username=null, password=null){
         if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
-            currentUserId = dataFromServer.user.id;
+            currentUserID = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         } else {
@@ -69,7 +69,7 @@ async function logout(){
         if(Object.is(dataFromServer.signal,"ok")){
             document.getElementById("regLoginDisplay").style.display = "block";
             document.getElementById("chatroomsDisplay").style.display = "none";
-            currentUserId = null;
+            currentUserID = null;
             currentUsername = null;
             document.getElementById("loginUser").value = "";
             document.getElementById("loginPW").value = "";
@@ -92,7 +92,7 @@ async function checkLogin(){
         if(Object.is(dataFromServer.signal,"ok") && dataFromServer.authenticated){
             document.getElementById("regLoginDisplay").style.display = "none";
             document.getElementById("chatroomsDisplay").style.display = "block";
-            currentUserId = dataFromServer.user.id;
+            currentUserID = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
         }
@@ -151,14 +151,16 @@ async function joinChatroom(){
 
 async function deleteChatroom(chatroomID){
     // Check if chatroom is already being deleted
-    if(deleteInProgress.has(chatroomID)) return;
+    if(DBMutex.has(chatroomID)){
+        return;
+    }
     //Creates confirm option before it does so
-    if(!confirm("Are you sure about deleting this chatroom?")){
+    if(!confirm("Confirm deleting this chatroom")){
         return;
     }
     try{
         //add chatroomID in TODO delete list
-        deleteInProgress.add(chatroomID);
+        DBMutex.add(chatroomID);
         //Close the message stream about it and delete it
         if(messageStreams[chatroomID]){
             messageStreams[chatroomID].close();
@@ -191,7 +193,9 @@ async function deleteChatroom(chatroomID){
                 tab.remove();
             }
             //deletes tabs and chatroomArea about that chatroom and shows home page if there are no more tabs left
-            if(chatroomArea) chatroomArea.remove();
+            if(chatroomArea){
+                chatroomArea.remove();
+            } 
             const tabs = document.querySelectorAll(".tab");
             const HTMLBlock = `<div class="welcomeBanner">
                                     <h2>Welcome to the Chatroom Website</h2>
@@ -209,7 +213,7 @@ async function deleteChatroom(chatroomID){
         alert("Failed to delete chatroom. Please try again.");
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
-        deleteInProgress.delete(chatroomID);
+        DBMutex.delete(chatroomID);
         const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
         if(deleteAdminButton){
             deleteAdminButton.disabled = false;
@@ -219,12 +223,14 @@ async function deleteChatroom(chatroomID){
 }
 
 async function leaveChatroom(chatroomID) {
-    if (deleteInProgress.has(chatroomID)) return;
-    if (!confirm('Are you sure you want to leave this chatroom?')) {
+    if (DBMutex.has(chatroomID)){
+        return;
+    }
+    if (!confirm('Confirm leaving this chatroom?')) {
         return;
     }
     try {
-        deleteInProgress.add(chatroomID);
+        DBMutex.add(chatroomID);
         if (messageStreams[chatroomID]) {
             messageStreams[chatroomID].close();
             delete messageStreams[chatroomID];
@@ -271,7 +277,7 @@ async function leaveChatroom(chatroomID) {
         console.error('Error leaving chatroom:', error);
         alert('Failed to leave chatroom');
     } finally {
-        deleteInProgress.delete(chatroomID);
+        DBMutex.delete(chatroomID);
         const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
         if (button) {
             button.disabled = false;
@@ -482,7 +488,7 @@ function appendMessage(chatroomID, message){
         return;
     }
     const messageElement = document.createElement("div");
-    if(Object.is(message.userID,currentUserId)){
+    if(Object.is(message.userID,currentUserID)){
         messageElement.className = "message sent";
     } else {
         messageElement.className = "message received";

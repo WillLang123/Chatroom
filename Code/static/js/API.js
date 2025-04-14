@@ -229,7 +229,7 @@ async function loadChatrooms(){
         }
         tabsContainer.innerHTML = "";
         contentContainer.innerHTML = "";
-        if(!dataFromServer.chatrooms || dataFromServer.chatrooms.length === 0){
+        if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
             HTMLBlock = `<div class="welcomeBanner">
                             <h2>Welcome to the Chatroom Website</h2>
                             <p>Either use an ID to join or create a chatroom to get started.</p>
@@ -285,7 +285,7 @@ async function loadChatrooms(){
                 </div>
                 <div class="messages" id="messageTable${chatroom.id}"></div>
                 <div class="messageBox">
-                    <input type="text" placeholder="Type your message...">
+                    <input type="text" placeholder="Put message here">
                     <button class="button buttonMain" onclick="sendMessage(${chatroom.id})">Send</button>
                 </div>`;
             contentContainer.appendChild(chatroomArea);

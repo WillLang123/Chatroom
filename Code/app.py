@@ -193,6 +193,41 @@ def handleJoinChatroom():
     finally:
         quickClose(cursor,conn)
 
+@app.route("/leaveChatroom/<int:chatroomID>", methods=["POST"])
+def handleLeaveChatroom(chatroomID):
+    if 'userID' not in session:
+        error =jsonify({"problem": "Not logged in"})
+        return error
+    try:
+        cursor, conn = quickCursor()
+        cursor.execute('BEGIN TRANSACTION')
+        cursor.execute('SELECT adminID FROM chatrooms WHERE id = ?', (chatroomID,))
+        result = cursor.fetchone()
+        if not result:
+            error = jsonify({"problem": "Chatroom not found"})
+            return error
+        if result[0] == session['userID']:
+            error = jsonify({"problem": "Admins cannot leave chatroom"})
+            return error
+        cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
+        result = cursor.fetchone()
+        if result and result[0]:
+            chatroomIDs = result[0].split(',')
+            if str(chatroomID) in chatroomIDs:
+                chatroomIDs.remove(str(chatroomID))
+                newChatroomIDs = ','.join(chatroomIDs) if chatroomIDs else None
+                cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (newChatroomIDs, session['userID']))
+        cursor.execute('COMMIT')
+        messageToAPI = jsonify({"signal": "ok"})
+        return messageToAPI
+    except Exception:
+        print("Issue with leaving chatroom")
+        cursor.execute('ROLLBACK')
+        error = jsonify({"problem": "Failed to leave chatroom"})
+        return error
+    finally:
+        quickClose(cursor,conn)
+
 # When called to delete chatroom using curl
 @app.route("/deleteChatroom/<int:chatroomID>", methods=["DELETE"])
 def handleDeleteChatroom(chatroomID):

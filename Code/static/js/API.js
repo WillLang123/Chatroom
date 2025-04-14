@@ -218,6 +218,68 @@ async function deleteChatroom(chatroomID){
     }
 }
 
+async function leaveChatroom(chatroomID) {
+    if (deleteInProgress.has(chatroomID)) return;
+    if (!confirm('Are you sure you want to leave this chatroom?')) {
+        return;
+    }
+    try {
+        deleteInProgress.add(chatroomID);
+        if (messageStreams[chatroomID]) {
+            messageStreams[chatroomID].close();
+            delete messageStreams[chatroomID];
+        }
+        const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
+        if (button) {
+            button.disabled = true;
+            button.style.opacity = "0.5";
+        }
+        const response = await fetch(`/leaveChatroom/${chatroomID}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (!data.problem) {
+            const tab = document.querySelector(`.tab[chatroomID="${chatroomID}"]`);
+            const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
+            if (tab) {
+                if (tab.classList.contains("active")) {
+                    const nextTab = tab.nextElementSibling || tab.previousElementSibling;
+                    if (nextTab) {
+                        const nextChatroomID = nextTab.getAttribute("chatroomID");
+                        switchTab(nextChatroomID);
+                    }
+                }
+                tab.remove();
+            }
+            if (chatroomArea) {
+                chatroomArea.remove();
+            }
+            const tabs = document.querySelectorAll(".tab");
+            if (Object.is(tabs.length, 0)) {
+                document.getElementById("tabContent").innerHTML = `<div class="welcomeBanner">
+                    <h2>Welcome to the Chatroom Website</h2>
+                    <p>Either use an ID to join or create a chatroom to get started.</p>
+                </div>`;
+            }
+        } else {
+            alert(data.problem);
+        }
+    } catch (error) {
+        console.error('Error leaving chatroom:', error);
+        alert('Failed to leave chatroom');
+    } finally {
+        deleteInProgress.delete(chatroomID);
+        const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
+        if (button) {
+            button.disabled = false;
+            button.style.opacity = "1";
+        }
+    }
+}
+
 async function loadChatrooms(){
     try{
         const response = await fetch("/chatrooms");
@@ -256,7 +318,13 @@ async function loadChatrooms(){
                             </button>
                         </div>`
             } else {
-                HTMLBlock = ""
+                HTMLBlock = `
+                        <div class=deleteChatContainer">
+                            <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
+                            <button class="button buttonLeave" onclick="event.stopPropagation(); leaveChatroom(${chatroom.id})">
+                                Leave
+                            </button>
+                        </div>`
             }
             tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
                                 <span>${chatroom.name}</span>

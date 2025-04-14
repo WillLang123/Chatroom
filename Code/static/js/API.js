@@ -36,8 +36,8 @@ async function register(){
     }
 }
 
-async function login(username = null, password = null){
-    if(!username || !password){
+async function login(username=null, password=null){
+    if((Object.is(username,null)) || (Object.is(password,null))){
         username = document.getElementById("loginUser").value;
         password = document.getElementById("loginPW").value;
     }
@@ -103,7 +103,7 @@ async function checkLogin(){
 
 async function createChatroom(){
     const name = document.getElementById("chatroomName").value;
-    if(!name) return;
+    if(!(Object.is(name,null))||!(Object.is(name,""))) return;
     try{
         const response = await fetch("/createChatroom", {
             method: "POST",
@@ -125,7 +125,7 @@ async function createChatroom(){
 
 async function joinChatroom(){
     const id = document.getElementById("chatroomID").value;
-    if(!id) return;
+    if((Object.is(id,null))) return;
     try{
         const response = await fetch("/joinChatroom", {
             method: "POST",
@@ -161,10 +161,10 @@ async function deleteChatroom(chatroomID){
             delete messageStreams[chatroomID];
         }
         //disables delete button for that specific chatroom tab
-        const deleteButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
-        if(deleteButton){
-            deleteButton.disabled = true;
-            deleteButton.style.opacity = "0.5";
+        const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
+        if(deleteAdminButton){
+            deleteAdminButton.disabled = true;
+            deleteAdminButton.style.opacity = "0.5";
         }
         //Calls server using curl to delete that chatroom
         const response = await fetch(`/deleteChatroom/${chatroomID}`, { method: "DELETE" });
@@ -189,12 +189,12 @@ async function deleteChatroom(chatroomID){
             //deletes tabs and chatroomArea about that chatroom and shows home page if there are no more tabs left
             if(chatroomArea) chatroomArea.remove();
             const tabs = document.querySelectorAll(".tab");
+            const HTMLBlock = `<div class="welcomeBanner">
+                                    <h2>Welcome to the Chatroom Website</h2>
+                                    <p>Either use an ID to join or create a chatroom to get started.</p>
+                                </div>`
             if(Object.is(tabs.length,0)){
-                document.getElementById("tabContent").innerHTML = `
-                    <div class="welcomeBanner">
-                        <h2>Welcome to the Chat App!</h2>
-                        <p>Create a new chatroom or join an existing one to start chatting.</p>
-                    </div>`;
+                document.getElementById("tabContent").innerHTML = HTMLBlock;
             }
         } else {
             alert(dataFromServer.message || "Failed to delete chatroom");
@@ -206,10 +206,10 @@ async function deleteChatroom(chatroomID){
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
         deleteInProgress.delete(chatroomID);
-        const deleteButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
-        if(deleteButton){
-            deleteButton.disabled = false;
-            deleteButton.style.opacity = "1";
+        const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
+        if(deleteAdminButton){
+            deleteAdminButton.disabled = false;
+            deleteAdminButton.style.opacity = "1";
         }
     }
 }
@@ -220,14 +220,14 @@ async function loadChatrooms(){
         const dataFromServer = await response.json();
         const tabsContainer = document.getElementById("chatroomTabs");
         const contentContainer = document.getElementById("tabContent");
-        if(!tabsContainer || !contentContainer) return;
+        if(!((Object.is(tabsContainer,null)) || (Object.is(tabsContainer,""))) || !((Object.is(contentContainer,null)) || (Object.is(contentContainer,"")))) return;
         tabsContainer.innerHTML = "";
         contentContainer.innerHTML = "";
         if(!dataFromServer.chatrooms || (Object.is(dataFromServer.chatrooms.length,0))){
             contentContainer.innerHTML = `
                 <div class="welcomeBanner">
                     <h2>Welcome to the Chatroom Website</h2>
-                    <p>Either create a chatroom or join one with an ID to talk to others.</p>
+                    <p>Either use an ID to join or create a chatroom to get started.</p>
                 </div>`;
             return;
         }
@@ -243,7 +243,7 @@ async function loadChatrooms(){
             //Renders tab for each classroom with delete button and chatroom id for invites
             if(chatroom.isAdmin){
                 HTMLBlock = `
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class=deleteChatContainer">
                             <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
                             <button class="button buttonDelete" onclick="event.stopPropagation(); deleteChatroom(${chatroom.id})">
                                 Delete
@@ -322,7 +322,7 @@ async function loadMessages(chatroomID){
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok")){
             const messageContainer = document.querySelector(`#messageTable${chatroomID}`);
-            if(!messageContainer) return;
+            if(!(Object.is(messageContainer,null)) || !(Object.is(messageContainer,null))) return;
             messageContainer.innerHTML = "";
             dataFromServer.messages.forEach(message => appendMessage(chatroomID, message));
             messageContainer.scrollTop = messageContainer.scrollHeight;
@@ -336,7 +336,7 @@ async function sendMessage(chatroomID){
     const input = document.querySelector(`#chatroomID${chatroomID} .messageBox input`);
     const message = input.value.trim();
     //trims input from HTML
-    if(!message) return;
+    if(!(Object.is(message,null)) || !(Object.is(message,""))) return;
     //breaks if input is empty
     try{
         //sends curl message to server to send message as well as a json of the message
@@ -376,7 +376,7 @@ function setupMessageStream(chatroomID){
     };
     eventSource.onerror = (error) => {
         const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
-        if(!chatroomArea){
+        if(!(Object.is(chatroomArea,null)) || !(Object.is(chatroomArea,""))){
             eventSource.close();
             delete messageStreams[chatroomID];
             return;
@@ -394,7 +394,7 @@ function setupMessageStream(chatroomID){
 
 function appendMessage(chatroomID, message){
     const messageContainer = document.querySelector(`#messageTable${chatroomID}`);
-    if(!messageContainer) return;
+    if(!(Object.is(messageContainer,null))||!(Object.is(messageContainer,""))) return;
     const existingMessage = messageContainer.querySelector(`[messageID="${message.id}"]`);
     if(existingMessage) return;
     const messageElement = document.createElement("div");

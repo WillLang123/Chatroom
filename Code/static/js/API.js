@@ -490,9 +490,9 @@ function appendMessage(chatroomID, message){
     messageElement.setAttribute("messageID", message.id);
     const timestamp = new Date(message.timestamp).toLocaleTimeString();
     messageElement.innerHTML = `
-        <div class="sender">${message.username}</div>
+        <div class="from">${message.username}</div>
         <div class="content">${cleanMessage(message.message)}</div>
-        <div class="timestamp">${timestamp}</div>
+        <div class="time">${timestamp}</div>
     `;
     messageContainer.appendChild(messageElement);
     const isNearBottom = messageContainer.scrollHeight - messageContainer.scrollTop - messageContainer.clientHeight < 100;

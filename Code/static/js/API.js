@@ -170,7 +170,6 @@ async function deleteChatroom(chatroomID){
         const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
         if(deleteAdminButton){
             deleteAdminButton.disabled = true;
-            deleteAdminButton.style.opacity = "0.5";
         }
         //Calls server using curl to delete that chatroom
         const response = await fetch(`/deleteChatroom/${chatroomID}`, { method: "DELETE" });
@@ -217,7 +216,6 @@ async function deleteChatroom(chatroomID){
         const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
         if(deleteAdminButton){
             deleteAdminButton.disabled = false;
-            deleteAdminButton.style.opacity = "1";
         }
     }
 }
@@ -238,7 +236,6 @@ async function leaveChatroom(chatroomID) {
         const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
         if (button) {
             button.disabled = true;
-            button.style.opacity = "0.5";
         }
         const response = await fetch(`/leaveChatroom/${chatroomID}`, {
             method: 'POST',
@@ -266,8 +263,8 @@ async function leaveChatroom(chatroomID) {
             const tabs = document.querySelectorAll(".tab");
             if (Object.is(tabs.length, 0)) {
                 document.getElementById("tabContent").innerHTML = `<div class="welcomeBanner">
-                    <h2>Welcome to the Chatroom Website</h2>
-                    <p>Either use an ID to join or create a chatroom to get started.</p>
+                    <h2>Welcome to the COSC 4360-01 chatroom website</h2>
+                    <p>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</p>
                 </div>`;
             }
         } else {
@@ -281,7 +278,6 @@ async function leaveChatroom(chatroomID) {
         const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
         if (button) {
             button.disabled = false;
-            button.style.opacity = "1";
         }
     }
 }
@@ -299,8 +295,8 @@ async function loadChatrooms(){
         contentContainer.innerHTML = "";
         if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
             HTMLBlock = `<div class="welcomeBanner">
-                            <h2>Welcome to the Chatroom Website</h2>
-                            <p>Either use an ID to join or create a chatroom to get started.</p>
+                            <h2>Welcome to the COSC 4360-01 chatroom website</h2>
+                            <p>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</p>
                         </div>`;
             contentContainer.innerHTML = HTMLBlock;
             return;

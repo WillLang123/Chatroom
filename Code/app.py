@@ -1,13 +1,12 @@
 from flask import Flask, render_template, jsonify, request, session, Response
-import secrets
 import json
 import time
-import sqlite3
 from utils import quickCursor, quickClose, createMessageTable, getChatroomByID
 
 app = Flask(__name__)
 app.secret_key = "COSC4360GP"
 
+#remove parameter function
 @app.route('/')
 def index():
     return render_template('mainPage.html')

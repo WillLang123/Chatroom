@@ -7,7 +7,7 @@ const welcomeBackground = `<div class="welcomeBanner">
                                 <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                             </div>`;
 
-//hyphen, =>, toggle form changes for chatroom
+//=>, remove curl param?
 function registerMode(regBool){
     const loginPage = document.getElementById("loginPage");
     const registerPage = document.getElementById("registerPage");

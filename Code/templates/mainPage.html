@@ -25,7 +25,7 @@
                     <button class="button buttonMain" onclick="register()">Make Account</button>
                     <div id="registerError" class="errorMessage"></div>
                     <p class="toggleForm">
-                        Already have an account? <a href="#" onclick="toggleForm('login')">Login</a>
+                        Already have an account? <a href="#" onclick="registerMode(false)">Login</a>
                     </p>
                 </div>
                 <!-- Login Page -->
@@ -42,7 +42,7 @@
                     <button class="button buttonMain" onclick="login()">Login</button>
                     <div id="loginError" class="errorMessage"></div>
                     <p class="toggleForm">
-                        Make an account: <a href="#" onclick="toggleForm('register')">Register</a>
+                        Make an account: <a href="#" onclick="registerMode(true)">Register</a>
                     </p>
                 </div>
                 

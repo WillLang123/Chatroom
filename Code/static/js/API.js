@@ -7,16 +7,28 @@ const welcomeBackground = `<div class="welcomeBanner">
                                 <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                             </div>`;
 
-//hyphen
-function toggleForm(formType){
-    const loginForm = document.getElementById("loginPage");
-    const registerForm = document.getElementById("registerPage");
-    if(Object.is(formType,"login")){
-        loginForm.style.display = "block";
-        registerForm.style.display = "none";
+//hyphen, =>, toggle form changes for chatroom
+function registerMode(regBool){
+    const loginPage = document.getElementById("loginPage");
+    const registerPage = document.getElementById("registerPage");
+    if(regBool){
+        loginPage.style.display = "none";
+        registerPage.style.display = "block";
     } else {
-        loginForm.style.display = "none";
-        registerForm.style.display = "block";
+        loginPage.style.display = "block";
+        registerPage.style.display = "none";
+    }
+}
+
+function chatroomMode(chatBool){
+    const loginPage = document.getElementById("regLoginDisplay")
+    const chatroomPage = document.getElementById("chatroomsDisplay")
+    if(chatBool){
+        loginPage.style.display = "none";
+        chatroomPage.style.display = "block";
+    } else {
+        loginPage.style.display = "block";
+        chatroomPage.style.display = "none";
     }
 }
 
@@ -53,8 +65,7 @@ async function login(username=null, password=null){
         });
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok")){
-            document.getElementById("regLoginDisplay").style.display = "none";
-            document.getElementById("chatroomsDisplay").style.display = "block";
+            chatroomMode(true);
             currentUserID = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();
@@ -71,8 +82,7 @@ async function logout(){
         const response = await fetch("/logout", { method: "POST" });
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok")){
-            document.getElementById("regLoginDisplay").style.display = "block";
-            document.getElementById("chatroomsDisplay").style.display = "none";
+            chatroomMode(false);
             currentUserID = null;
             currentUsername = null;
             document.getElementById("loginUser").value = "";
@@ -94,8 +104,7 @@ async function checkLogin(){
         const response = await fetch("/checkLogin");
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok") && dataFromServer.authenticated){
-            document.getElementById("regLoginDisplay").style.display = "none";
-            document.getElementById("chatroomsDisplay").style.display = "block";
+            chatroomMode(true);
             currentUserID = dataFromServer.user.id;
             currentUsername = dataFromServer.user.username;
             await loadChatrooms();

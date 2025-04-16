@@ -189,11 +189,15 @@ async function deleteChatroom(chatroomID){
         if(Object.is(dataFromServer.signal,"ok")){
             const tab = document.getElementsByClassName('tab');
             let targetTab = null;
+            let targetIndex = -1;
+            let currentIndex = 0;
             for (const t of tab) {
                 if (Object.is(t.getAttribute('chatroomID'),chatroomID.toString())) {
                     targetTab = t;
+                    targetIndex = currentIndex;
                     break;
                 }
+                currentIndex++;
             }
             const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
             //removes elements about that chatroom
@@ -201,7 +205,7 @@ async function deleteChatroom(chatroomID){
                 //it begins to make tabs for next or previous chatroom to become its next and previous tabs
                 //  for the chatroom that got deleted
                 if(targetTab.classList.contains("active")){
-                    const nextTab = targetTab.nextElementSibling || targetTab.previousElementSibling;
+                    const nextTab = tab[targetIndex + 1] || tab[targetIndex - 1];
                     if(nextTab){
                         const nextChatroomID = nextTab.getAttribute("chatroomID");
                         switchTab(nextChatroomID);
@@ -275,16 +279,20 @@ async function leaveChatroom(chatroomID) {
         if (!data.problem) {
             const tab = document.getElementsByClassName('tab');
             let targetTab = null;
+            let targetIndex = -1;
+            let currentIndex = 0;
             for (const t of tab) {
                 if (Object.is(t.getAttribute('chatroomID'),chatroomID.toString())) {
                     targetTab = t;
+                    targetIndex = currentIndex;
                     break;
                 }
+                currentIndex++;
             }
             const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
             if (targetTab) {
                 if (targetTab.classList.contains("active")) {
-                    const nextTab = targetTab.nextElementSibling || targetTab.previousElementSibling;
+                    const nextTab = tab[targetIndex + 1] || tab[targetIndex - 1];
                     if (nextTab) {
                         const nextChatroomID = nextTab.getAttribute("chatroomID");
                         switchTab(nextChatroomID);

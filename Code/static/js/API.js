@@ -7,7 +7,7 @@ const welcomeBackground = `<div class="welcomeBanner">
                                 <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                             </div>`;
 
-//=>, remove curl param?
+//=>, remove curl param, appendmessage/setupstream?, one use methods/designs?
 function registerMode(regBool){
     const loginPage = document.getElementById("loginPage");
     const registerPage = document.getElementById("registerPage");

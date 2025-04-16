@@ -214,7 +214,7 @@ async function deleteChatroom(chatroomID){
                 chatroomArea.remove();
             } 
             const tabs = document.getElementsByClassName("tab");
-            if(Object.is(tabs.length,0)){
+            if(tabs.length == 0){
                 document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
         } else {
@@ -296,7 +296,7 @@ async function leaveChatroom(chatroomID) {
                 chatroomArea.remove();
             }
             const tabs = document.getElementsByClassName("tab");
-            if (Object.is(tabs.length, 0)) {
+            if (tabs.length == 0) {
                 document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
         } else {

@@ -183,7 +183,7 @@ async function deleteChatroom(chatroomID){
         const chatroomTabs = document.getElementById('chatroomTabs');
         const tab = chatroomTabs.getElementsByClassName('tab');
         let deleteAdminButton = null;
-        for (let t of tab) {
+        for (const t of tab) {
             if (t.getAttribute('chatroomID') === chatroomID.toString()) {
                 deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
                 break;
@@ -199,7 +199,7 @@ async function deleteChatroom(chatroomID){
         if(Object.is(dataFromServer.signal,"ok")){
             const tab = document.getElementsByClassName('tab');
             let targetTab = null;
-            for (let t of tab) {
+            for (const t of tab) {
                 if (t.getAttribute('chatroomID') === chatroomID.toString()) {
                     targetTab = t;
                     break;
@@ -240,7 +240,7 @@ async function deleteChatroom(chatroomID){
         const chatroomTabs = document.getElementById('chatroomTabs');
         const tab = chatroomTabs.getElementsByClassName('tab');
         let deleteAdminButton = null;
-        for (let t of tab) {
+        for (const t of tab) {
             if (t.getAttribute('chatroomID') === chatroomID.toString()) {
                 deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
                 break;
@@ -267,7 +267,7 @@ async function leaveChatroom(chatroomID) {
         }
         const buttons = document.getElementsByClassName('buttonLeave');
         let button = null;
-        for (let b of buttons) {
+        for (const b of buttons) {
             if (b.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
                 button = b;
                 break;
@@ -286,7 +286,7 @@ async function leaveChatroom(chatroomID) {
         if (!data.problem) {
             const tab = document.getElementsByClassName('tab');
             let targetTab = null;
-            for (let t of tab) {
+            for (const t of tab) {
                 if (t.getAttribute('chatroomID') === chatroomID.toString()) {
                     targetTab = t;
                     break;
@@ -320,7 +320,7 @@ async function leaveChatroom(chatroomID) {
         DBMutex.delete(chatroomID);
         const buttons = document.getElementsByClassName('buttonLeave');
         let button = null;
-        for (let b of buttons) {
+        for (const b of buttons) {
             if (b.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
                 button = b;
                 break;
@@ -421,7 +421,7 @@ async function loadChatrooms(){
 
 function switchTab(chatroomID){
     const tabs = document.getElementsByClassName("tab");
-    for (let tab of tabs) {
+    for (const tab of tabs) {
         if(tab.getAttribute("chatroomID") == chatroomID){
             tab.classList.add("active");
         } else {
@@ -429,7 +429,7 @@ function switchTab(chatroomID){
         }
     }
     const chatroomSections = document.getElementsByClassName("chatroomSection");
-    for (let area of chatroomSections) {
+    for (const area of chatroomSections) {
         if(area.getAttribute("chatroomID") == chatroomID){
             area.classList.add("active");
         } else {

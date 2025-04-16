@@ -78,39 +78,31 @@ async function login(username=null, password=null){
 }
 
 async function logout(){
-    try{
-        const response = await fetch("/logout", { method: "POST" });
-        const dataFromServer = await response.json();
-        if(Object.is(dataFromServer.signal,"ok")){
-            chatroomMode(false);
-            currentUserID = null;
-            currentUsername = null;
-            document.getElementById("loginUser").value = "";
-            document.getElementById("loginPW").value = "";
-            document.getElementById("registerUser").value = "";
-            document.getElementById("registerPW").value = "";
-            document.getElementById("loginError").textContent = "";
-            document.getElementById("registerError").textContent = "";
-            Object.values(messageStreams).forEach(stream => stream.close());
-            messageStreams = {};
-        }
-    } catch(error){
-        console.error("Problem during logout:", error);
+    const response = await fetch("/logout", { method: "POST" });
+    const dataFromServer = await response.json();
+    if(Object.is(dataFromServer.signal,"ok")){
+        chatroomMode(false);
+        currentUserID = null;
+        currentUsername = null;
+        document.getElementById("loginUser").value = "";
+        document.getElementById("loginPW").value = "";
+        document.getElementById("registerUser").value = "";
+        document.getElementById("registerPW").value = "";
+        document.getElementById("loginError").textContent = "";
+        document.getElementById("registerError").textContent = "";
+        Object.values(messageStreams).forEach(stream => stream.close());
+        messageStreams = {};
     }
 }
 
 async function checkLogin(){
-    try{
-        const response = await fetch("/checkLogin");
-        const dataFromServer = await response.json();
-        if(Object.is(dataFromServer.signal,"ok") && dataFromServer.authenticated){
-            chatroomMode(true);
-            currentUserID = dataFromServer.user.id;
-            currentUsername = dataFromServer.user.username;
-            await loadChatrooms();
-        }
-    } catch(error){
-        console.error("Problem checking authentication:", error);
+    const response = await fetch("/checkLogin");
+    const dataFromServer = await response.json();
+    if(Object.is(dataFromServer.signal,"ok") && dataFromServer.authenticated){
+        chatroomMode(true);
+        currentUserID = dataFromServer.user.id;
+        currentUsername = dataFromServer.user.username;
+        await loadChatrooms();
     }
 }
 
@@ -133,7 +125,6 @@ async function createChatroom(){
             alert(dataFromServer.message);
         }
     } catch(error){
-        console.error("Problem creating chatroom:", error);
         alert("Failed to create chatroom. Please try again.");
     }
 }
@@ -157,7 +148,6 @@ async function joinChatroom(){
             alert(dataFromServer.message);
         }
     } catch(error){
-        console.error("Problem joining chatroom:", error);
         alert("Failed to join chatroom. Please try again.");
     }
 }
@@ -232,7 +222,6 @@ async function deleteChatroom(chatroomID){
         }
     } catch(error){
         //shows error if there was a problem
-        console.error("Problem deleting chatroom:", error);
         alert("Failed to delete chatroom. Please try again.");
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
@@ -314,7 +303,6 @@ async function leaveChatroom(chatroomID) {
             alert(data.problem);
         }
     } catch (error) {
-        console.error('Error leaving chatroom:', error);
         alert('Failed to leave chatroom');
     } finally {
         DBMutex.delete(chatroomID);
@@ -333,90 +321,86 @@ async function leaveChatroom(chatroomID) {
 }
 
 async function loadChatrooms(){
-    try{
-        const response = await fetch("/chatrooms");
-        const dataFromServer = await response.json();
-        const tabsContainer = document.getElementById("chatroomTabs");
-        const contentContainer = document.getElementById("tabContent");
-        if(!tabsContainer || !contentContainer){
-            return;
-        }
-        tabsContainer.innerHTML = "";
-        contentContainer.innerHTML = "";
-        if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
-            contentContainer.innerHTML = welcomeBackground;
-            return;
-        }
-        dataFromServer.chatrooms.forEach((chatroom, index) => {
-            const tab = document.createElement("div");
-            if(Object.is(index,0)){
-                tab.className = "tab active";
-            } else {
-                tab.className = "tab";
-            }
-            tab.setAttribute("chatroomID", chatroom.id);
-            tab.onclick = () => switchTab(chatroom.id);
-            //Renders tab for each classroom with delete button and chatroom id for invites
-            let buttonType, buttonAction, buttonWord;
-            if(chatroom.isAdmin){
-                buttonType = "buttonDelete";
-                buttonAction = "deleteChatroom";
-                buttonWord = "Delete";
-            } else {
-                buttonType = "buttonLeave";
-                buttonAction = "leaveChatroom";
-                buttonWord = "Leave";
-            }
-            tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
-                                <span>${chatroom.name}</span>
-                                <div class="deleteChatContainer">
-                                    <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
-                                    <button class="button ${buttonType}" onclick="event.stopPropagation(); ${buttonAction}(${chatroom.id})">
-                                        ${buttonWord}
-                                    </button>
-                                </div>
-                            </div>`;
-            tabsContainer.appendChild(tab);
-            const chatroomArea = document.createElement("div");
-            if(Object.is(index,0)){
-                chatroomArea.className = "chatroomSection active";
-            } else {    
-                chatroomArea.className = "chatroomSection";
-            }
-            chatroomArea.id = `chatroomID${chatroom.id}`;
-            chatroomArea.setAttribute("chatroomID", chatroom.id);
-            //Renders HTML for sending messages
-            HTMLBlock = ""
-            if(chatroom.isAdmin){
-                HTMLBlock = `<small>Chatroom ID: ${chatroom.id}</small>`
-            } else {
-                HTMLBlock = ""
-            }
-            chatroomArea.innerHTML = `
-                <div class="chatroomBanner">
-                    <h3>${chatroom.name}</h3>
-                    ${HTMLBlock}
-                </div>
-                <div class="messages" id="messageTable${chatroom.id}"></div>
-                <div class="messageBox">
-                    <input type="text" placeholder="Put message here">
-                    <button class="button buttonMain" onclick="sendMessage(${chatroom.id})">Send</button>
-                </div>`;
-            contentContainer.appendChild(chatroomArea);
-            const input = chatroomArea.querySelector(".messageBox input");
-            //takes input and looks for enter key or submit button and tries to send messsage with chatroom id
-            input.addEventListener("keypress", (e) => {
-                if(Object.is(e.key,"Enter")){
-                    e.preventDefault();
-                    sendMessage(chatroom.id);
-                }
-            });
-            loadMessages(chatroom.id);
-            setupMessageStream(chatroom.id);
-        });
-    } catch(error){
-        console.error("Problem loading chatrooms:", error);
+    const response = await fetch("/chatrooms");
+    const dataFromServer = await response.json();
+    const tabsContainer = document.getElementById("chatroomTabs");
+    const contentContainer = document.getElementById("tabContent");
+    if(!tabsContainer || !contentContainer){
+        return;
     }
+    tabsContainer.innerHTML = "";
+    contentContainer.innerHTML = "";
+    if(!dataFromServer.chatrooms || Object.is(dataFromServer.chatrooms.length, 0)){
+        contentContainer.innerHTML = welcomeBackground;
+        return;
+    }
+    dataFromServer.chatrooms.forEach((chatroom, index) => {
+        const tab = document.createElement("div");
+        if(Object.is(index,0)){
+            tab.className = "tab active";
+        } else {
+            tab.className = "tab";
+        }
+        tab.setAttribute("chatroomID", chatroom.id);
+        tab.onclick = () => switchTab(chatroom.id);
+        //Renders tab for each classroom with delete button and chatroom id for invites
+        let buttonType, buttonAction, buttonWord;
+        if(chatroom.isAdmin){
+            buttonType = "buttonDelete";
+            buttonAction = "deleteChatroom";
+            buttonWord = "Delete";
+        } else {
+            buttonType = "buttonLeave";
+            buttonAction = "leaveChatroom";
+            buttonWord = "Leave";
+        }
+        tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
+                            <span>${chatroom.name}</span>
+                            <div class="deleteChatContainer">
+                                <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>
+                                <button class="button ${buttonType}" onclick="event.stopPropagation(); ${buttonAction}(${chatroom.id})">
+                                    ${buttonWord}
+                                </button>
+                            </div>
+                        </div>`;
+        tabsContainer.appendChild(tab);
+        const chatroomArea = document.createElement("div");
+        if(Object.is(index,0)){
+            chatroomArea.className = "chatroomSection active";
+        } else {    
+            chatroomArea.className = "chatroomSection";
+        }
+        chatroomArea.id = `chatroomID${chatroom.id}`;
+        chatroomArea.setAttribute("chatroomID", chatroom.id);
+        //Renders HTML for sending messages
+        HTMLBlock = ""
+        if(chatroom.isAdmin){
+            HTMLBlock = `<small>Chatroom ID: ${chatroom.id}</small>`
+        } else {
+            HTMLBlock = ""
+        }
+        chatroomArea.innerHTML = `
+            <div class="chatroomBanner">
+                <h3>${chatroom.name}</h3>
+                ${HTMLBlock}
+            </div>
+            <div class="messages" id="messageTable${chatroom.id}"></div>
+            <div class="messageBox">
+                <input type="text" placeholder="Put message here">
+                <button class="button buttonMain" onclick="sendMessage(${chatroom.id})">Send</button>
+            </div>`;
+        contentContainer.appendChild(chatroomArea);
+        const input = chatroomArea.querySelector(".messageBox input");
+        //takes input and looks for enter key or submit button and tries to send messsage with chatroom id
+        input.addEventListener("keypress", (e) => {
+            if(Object.is(e.key,"Enter")){
+                e.preventDefault();
+                sendMessage(chatroom.id);
+            }
+        });
+        loadMessages(chatroom.id);
+        setupMessageStream(chatroom.id);
+    });
 }
 
 function switchTab(chatroomID){
@@ -439,20 +423,16 @@ function switchTab(chatroomID){
 }
 
 async function loadMessages(chatroomID){
-    try{
-        const response = await fetch(`/chatroom/${chatroomID}/messages`);
-        const dataFromServer = await response.json();
-        if(Object.is(dataFromServer.signal,"ok")){
-            const messageContainer = document.getElementById(`messageTable${chatroomID}`);
-            if(!messageContainer){
-                return;
-            }
-            messageContainer.innerHTML = "";
-            dataFromServer.messages.forEach(message => appendMessage(chatroomID, message));
-            messageContainer.scrollTop = messageContainer.scrollHeight;
+    const response = await fetch(`/chatroom/${chatroomID}/messages`);
+    const dataFromServer = await response.json();
+    if(Object.is(dataFromServer.signal,"ok")){
+        const messageContainer = document.getElementById(`messageTable${chatroomID}`);
+        if(!messageContainer){
+            return;
         }
-    } catch(error){
-        console.error("Problem loading messages:", error);
+        messageContainer.innerHTML = "";
+        dataFromServer.messages.forEach(message => appendMessage(chatroomID, message));
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 }
 
@@ -485,7 +465,6 @@ async function sendMessage(chatroomID){
             alert(dataFromServer.message);
         }
     } catch(error){
-        console.error("Problem sending message:", error);
         alert("Failed to send message. Please try again.");
     }
 }
@@ -498,15 +477,11 @@ function setupMessageStream(chatroomID){
     //reopens message stream if it is already opened
     const eventSource = new EventSource(`/chatroom/${chatroomID}/stream`);
     eventSource.onmessage = (event) => {
-        try{
-            const message = JSON.parse(event.data);
-            if(message.error){
-                return;
-            }
-            appendMessage(chatroomID, message);
-        } catch(error){
-            console.error("Problem processing message:", error);
+        const message = JSON.parse(event.data);
+        if(message.error){
+            return;
         }
+        appendMessage(chatroomID, message);
     };
     eventSource.onerror = (error) => {
         const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);

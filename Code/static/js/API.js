@@ -182,15 +182,15 @@ async function deleteChatroom(chatroomID){
         //disables delete button for that specific chatroom tab
         const chatroomTabs = document.getElementById('chatroomTabs');
         const tab = chatroomTabs.getElementsByClassName('tab');
-        let deleteAdminButton = null;
+        let deleteButton = null;
         for (const t of tab) {
             if (t.getAttribute('chatroomID') === chatroomID.toString()) {
-                deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
+                deleteButton = t.getElementsByClassName('buttonDelete')[0];
                 break;
             }
         }
-        if(deleteAdminButton){
-            deleteAdminButton.disabled = true;
+        if(deleteButton){
+            deleteButton.disabled = true;
         }
         //Calls server using curl to delete that chatroom
         const response = await fetch(`/deleteChatroom/${chatroomID}`, { method: "DELETE" });
@@ -239,15 +239,15 @@ async function deleteChatroom(chatroomID){
         DBMutex.delete(chatroomID);
         const chatroomTabs = document.getElementById('chatroomTabs');
         const tab = chatroomTabs.getElementsByClassName('tab');
-        let deleteAdminButton = null;
+        let deleteButton = null;
         for (const t of tab) {
             if (t.getAttribute('chatroomID') === chatroomID.toString()) {
-                deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
+                deleteButton = t.getElementsByClassName('buttonDelete')[0];
                 break;
             }
         }
-        if(deleteAdminButton){
-            deleteAdminButton.disabled = false;
+        if(deleteButton){
+            deleteButton.disabled = false;
         }
     }
 }
@@ -266,15 +266,15 @@ async function leaveChatroom(chatroomID) {
             delete messageStreams[chatroomID];
         }
         const buttons = document.getElementsByClassName('buttonLeave');
-        let button = null;
-        for (const b of buttons) {
-            if (b.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
-                button = b;
+        let rightButton = null;
+        for (const button of buttons) {
+            if (button.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
+                rightButton = button;
                 break;
             }
         }
-        if (button) {
-            button.disabled = true;
+        if (rightButton) {
+            rightButton.disabled = true;
         }
         const response = await fetch(`/leaveChatroom/${chatroomID}`, {
             method: 'POST',

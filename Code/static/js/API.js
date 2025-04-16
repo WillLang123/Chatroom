@@ -354,7 +354,7 @@ async function loadChatrooms(){
             buttonAction = "leaveChatroom";
             buttonWord = "Leave";
         }
-        tab.innerHTML = `<div class="tabContent" style="display: flex; align-items: center; gap: 10px;">
+        tab.innerHTML = `<div class="tabContent">
                             <span>${chatroom.name}</span>
                             <div class="deleteChatContainer">
                                 <span style="font-size: 12px; color: #95a5a6;">(ID: ${chatroom.id})</span>

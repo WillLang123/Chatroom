@@ -180,7 +180,15 @@ async function deleteChatroom(chatroomID){
             delete messageStreams[chatroomID];
         }
         //disables delete button for that specific chatroom tab
-        const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
+        const chatroomTabs = document.getElementById('chatroomTabs');
+        const tab = chatroomTabs.getElementsByClassName('tab');
+        let deleteAdminButton = null;
+        for (let t of tab) {
+            if (t.getAttribute('chatroomID') === chatroomID.toString()) {
+                deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
+                break;
+            }
+        }
         if(deleteAdminButton){
             deleteAdminButton.disabled = true;
         }
@@ -189,26 +197,33 @@ async function deleteChatroom(chatroomID){
         const dataFromServer = await response.json();
         //figures out if it worked
         if(Object.is(dataFromServer.signal,"ok")){
-            const tab = document.querySelector(`.tab[chatroomID="${chatroomID}"]`);
+            const tab = document.getElementsByClassName('tab');
+            let targetTab = null;
+            for (let t of tab) {
+                if (t.getAttribute('chatroomID') === chatroomID.toString()) {
+                    targetTab = t;
+                    break;
+                }
+            }
             const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
             //removes elements about that chatroom
-            if(tab){
+            if(targetTab){
                 //it begins to make tabs for next or previous chatroom to become its next and previous tabs
                 //  for the chatroom that got deleted
-                if(tab.classList.contains("active")){
-                    const nextTab = tab.nextElementSibling || tab.previousElementSibling;
+                if(targetTab.classList.contains("active")){
+                    const nextTab = targetTab.nextElementSibling || targetTab.previousElementSibling;
                     if(nextTab){
                         const nextChatroomID = nextTab.getAttribute("chatroomID");
                         switchTab(nextChatroomID);
                     }
                 }
-                tab.remove();
+                targetTab.remove();
             }
             //deletes tabs and chatroomArea about that chatroom and shows home page if there are no more tabs left
             if(chatroomArea){
                 chatroomArea.remove();
             } 
-            const tabs = document.querySelectorAll(".tab");
+            const tabs = document.getElementsByClassName("tab");
             if(Object.is(tabs.length,0)){
                 document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
@@ -222,7 +237,15 @@ async function deleteChatroom(chatroomID){
     } finally {
         //removes chatroom from delete list and makes delete button work again in that area
         DBMutex.delete(chatroomID);
-        const deleteAdminButton = document.querySelector(`#chatroomTabs .tab[chatroomID="${chatroomID}"] .buttonDelete`);
+        const chatroomTabs = document.getElementById('chatroomTabs');
+        const tab = chatroomTabs.getElementsByClassName('tab');
+        let deleteAdminButton = null;
+        for (let t of tab) {
+            if (t.getAttribute('chatroomID') === chatroomID.toString()) {
+                deleteAdminButton = t.getElementsByClassName('buttonDelete')[0];
+                break;
+            }
+        }
         if(deleteAdminButton){
             deleteAdminButton.disabled = false;
         }
@@ -242,7 +265,14 @@ async function leaveChatroom(chatroomID) {
             messageStreams[chatroomID].close();
             delete messageStreams[chatroomID];
         }
-        const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
+        const buttons = document.getElementsByClassName('buttonLeave');
+        let button = null;
+        for (let b of buttons) {
+            if (b.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
+                button = b;
+                break;
+            }
+        }
         if (button) {
             button.disabled = true;
         }
@@ -254,22 +284,29 @@ async function leaveChatroom(chatroomID) {
         });
         const data = await response.json();
         if (!data.problem) {
-            const tab = document.querySelector(`.tab[chatroomID="${chatroomID}"]`);
+            const tab = document.getElementsByClassName('tab');
+            let targetTab = null;
+            for (let t of tab) {
+                if (t.getAttribute('chatroomID') === chatroomID.toString()) {
+                    targetTab = t;
+                    break;
+                }
+            }
             const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
-            if (tab) {
-                if (tab.classList.contains("active")) {
-                    const nextTab = tab.nextElementSibling || tab.previousElementSibling;
+            if (targetTab) {
+                if (targetTab.classList.contains("active")) {
+                    const nextTab = targetTab.nextElementSibling || targetTab.previousElementSibling;
                     if (nextTab) {
                         const nextChatroomID = nextTab.getAttribute("chatroomID");
                         switchTab(nextChatroomID);
                     }
                 }
-                tab.remove();
+                targetTab.remove();
             }
             if (chatroomArea) {
                 chatroomArea.remove();
             }
-            const tabs = document.querySelectorAll(".tab");
+            const tabs = document.getElementsByClassName("tab");
             if (Object.is(tabs.length, 0)) {
                 document.getElementById("tabContent").innerHTML = welcomeBackground;
             }
@@ -281,7 +318,14 @@ async function leaveChatroom(chatroomID) {
         alert('Failed to leave chatroom');
     } finally {
         DBMutex.delete(chatroomID);
-        const button = document.querySelector(`.buttonLeave[onclick="leaveChatroom(${chatroomID})"]`);
+        const buttons = document.getElementsByClassName('buttonLeave');
+        let button = null;
+        for (let b of buttons) {
+            if (b.getAttribute('onclick') === `leaveChatroom(${chatroomID})`) {
+                button = b;
+                break;
+            }
+        }
         if (button) {
             button.disabled = false;
         }
@@ -376,20 +420,22 @@ async function loadChatrooms(){
 }
 
 function switchTab(chatroomID){
-    document.querySelectorAll(".tab").forEach(tab => {
+    const tabs = document.getElementsByClassName("tab");
+    for (let tab of tabs) {
         if(tab.getAttribute("chatroomID") == chatroomID){
             tab.classList.add("active");
         } else {
             tab.classList.remove("active");
         }
-    });
-    document.querySelectorAll(".chatroomSection").forEach(area => {
+    }
+    const chatroomSections = document.getElementsByClassName("chatroomSection");
+    for (let area of chatroomSections) {
         if(area.getAttribute("chatroomID") == chatroomID){
             area.classList.add("active");
         } else {
             area.classList.remove("active");
         }
-    });
+    }
 }
 
 async function loadMessages(chatroomID){
@@ -397,7 +443,7 @@ async function loadMessages(chatroomID){
         const response = await fetch(`/chatroom/${chatroomID}/messages`);
         const dataFromServer = await response.json();
         if(Object.is(dataFromServer.signal,"ok")){
-            const messageContainer = document.querySelector(`#messageTable${chatroomID}`);
+            const messageContainer = document.getElementById(`messageTable${chatroomID}`);
             if(!messageContainer){
                 return;
             }
@@ -411,7 +457,13 @@ async function loadMessages(chatroomID){
 }
 
 async function sendMessage(chatroomID){
-    const input = document.querySelector(`#chatroomID${chatroomID} .messageBox input`);
+    const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
+    if (!chatroomArea) return;
+    const messageBox = chatroomArea.getElementsByClassName('messageBox')[0];
+    if (!messageBox) return;
+    const input = messageBox.getElementsByTagName('input')[0];
+    if (!input) return;
+    
     const message = input.value.trim();
     //trims input from HTML
     if(!message){
@@ -475,7 +527,7 @@ function setupMessageStream(chatroomID){
 }
 
 function appendMessage(chatroomID, message){
-    const messageContainer = document.querySelector(`#messageTable${chatroomID}`);
+    const messageContainer = document.getElementById(`messageTable${chatroomID}`);
     if(!messageContainer){
         return;
     }

@@ -91,21 +91,34 @@ def checkLogin():
         error =jsonify({"problem": "Failed to check auth"})
         return error
 
+# The following function handles GET requests to /chatrooms
 @app.route("/chatrooms", methods=["GET"])
 def getChatrooms():
+
+    # If a userID is not found in session then return an error because the user is not logged in
     if 'userID' not in session:
         error = jsonify({"problem": "Not logged in"})
         return error
+    
     try:
+        # Open a connection to the database
         cursor, conn = quickCursor()
+
+        # Retrieve chatroom IDs from the database that are associated with the user
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
+
+        # If there are no chatrooms associated with the user then return empty list
         if not result or not result[0]:
             messageToAPI = jsonify({"signal": "ok", "chatrooms": []})
             return messageToAPI
+        
+        # Convert chatroom ID string into a list of integers
         chatroomIDs = []
         for id in result[0].split(','):
             chatroomIDs.append(int(id))
+
+        # Retrieve chatroom details for each ID
         chatrooms = []
         for chatroomID in chatroomIDs:
             cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
@@ -116,13 +129,19 @@ def getChatrooms():
                     'name': chatroom[1],
                     'isAdmin': chatroom[2] == session['userID']
                 })
+
+        # Return a JSON object with the list of chatrooms that the user is a part of
         messageToAPI = jsonify({"signal": "ok", "chatrooms": chatrooms})
         return messageToAPI
+    
     except Exception:
+        # Handle errors
         print("Issue with getting user chatrooms")
         error = jsonify({"problem": "Failed to get chatrooms"})
         return error
+    
     finally:
+        # Closes database connection after operations are complete
         quickClose(cursor,conn)
 
 @app.route("/createChatroom", methods=["POST"])

@@ -24,7 +24,7 @@ def register():
         if cursor.fetchone():
             error = jsonify({"problem": "Username already exists"})
             return error
-        cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))
+        cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))#test
         userID = cursor.lastrowid
         conn.commit()
         session['userID'] = userID

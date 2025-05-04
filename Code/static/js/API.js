@@ -5,7 +5,7 @@ let DBMutex = new Set();
 const welcomeBackground = `<div class="welcomeBanner">
                                 <h2>Welcome to the COSC 4360-01 chatroom website</h2>
                                 <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
-                            </div>`;
+                            </div>`; // This is a welcome message tells that if no classroom is selected then to either get information to join one or to create your own.
 
 //=>, appendmessage/setupstream?
 function registerMode(regBool){
@@ -19,7 +19,7 @@ function registerMode(regBool){
         registerPage.style.display = "none";
     }
 }
-
+// This code switches between the display the login screen and the chatroom display screen
 function chatroomMode(chatBool){
     const loginPage = document.getElementById("regLoginDisplay")
     const chatroomPage = document.getElementById("chatroomsDisplay")
@@ -51,7 +51,7 @@ async function register(){
         document.getElementById("registerError").textContent = "A problem occurred when registering account";
     }
 }
-
+// this logins existing users and then loads in their chatrooms
 async function login(username=null, password=null){
     if((Object.is(username,null)) || (Object.is(password,null))){
         username = document.getElementById("loginUser").value;
@@ -105,7 +105,7 @@ async function checkLogin(){
         await loadChatrooms();
     }
 }
-
+//This code is used to create a chatroom and provide it with a name.
 async function createChatroom(){
     const name = document.getElementById("chatroomName").value;
     if(!name){
@@ -128,7 +128,7 @@ async function createChatroom(){
         alert("Failed to create chatroom. Please try again.");
     }
 }
-
+// user can join a chatroom by using the chatroom id
 async function joinChatroom(){
     const id = document.getElementById("chatroomID").value;
     if((Object.is(id,null))){
@@ -151,7 +151,7 @@ async function joinChatroom(){
         alert("Failed to join chatroom. Please try again.");
     }
 }
-
+// deletes the chatroom (admin only)
 async function deleteChatroom(chatroomID){
     // Check if chatroom is already being deleted
     if(DBMutex.has(chatroomID)){
@@ -244,7 +244,7 @@ async function deleteChatroom(chatroomID){
         }
     }
 }
-
+//makes the regular non admin users able to leave the chatroom
 async function leaveChatroom(chatroomID) {
     if (DBMutex.has(chatroomID)){
         return;
@@ -327,7 +327,7 @@ async function leaveChatroom(chatroomID) {
         }
     }
 }
-
+// Load user's chatrooms, render tabs, and set up messaging UI
 async function loadChatrooms(){
     const response = await fetch("/chatrooms");
     const dataFromServer = await response.json();
@@ -410,7 +410,7 @@ async function loadChatrooms(){
         setupMessageStream(chatroom.id);
     });
 }
-
+// Switchs the active chatroom tab and its corresponding message view
 function switchTab(chatroomID){
     const tabs = document.getElementsByClassName("tab");
     for (const tab of tabs) {
@@ -429,7 +429,7 @@ function switchTab(chatroomID){
         }
     }
 }
-
+// Fetchs and loads existing messages for a chatroom
 async function loadMessages(chatroomID){
     const response = await fetch(`/chatroom/${chatroomID}/messages`);
     const dataFromServer = await response.json();
@@ -443,7 +443,7 @@ async function loadMessages(chatroomID){
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 }
-
+// sends a message to a specific chatroom
 async function sendMessage(chatroomID){
     const chatroomArea = document.getElementById(`chatroomID${chatroomID}`);
     if (!chatroomArea) return;
@@ -476,7 +476,7 @@ async function sendMessage(chatroomID){
         alert("Failed to send message. Please try again.");
     }
 }
-
+// Sets up SSE for real-time message updates from server
 function setupMessageStream(chatroomID){
     if(messageStreams[chatroomID]){
         messageStreams[chatroomID].close();
@@ -508,7 +508,7 @@ function setupMessageStream(chatroomID){
     };
     messageStreams[chatroomID] = eventSource;
 }
-
+// Append new incoming message to chatroom's UI
 function appendMessage(chatroomID, message){
     const messageContainer = document.getElementById(`messageTable${chatroomID}`);
     if(!messageContainer){
@@ -537,7 +537,7 @@ function appendMessage(chatroomID, message){
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 }
-
+// Sanitize messages to prevent XSS attacks
 function cleanMessage(unsafe){
     return unsafe
         .replace(/&/g, "&amp;")

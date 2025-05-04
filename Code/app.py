@@ -143,7 +143,7 @@ def getChatrooms():
     finally:
         # Closes database connection after operations are complete
         quickClose(cursor,conn)
-
+#Creates a new chatroom 
 @app.route("/createChatroom", methods=["POST"])
 def handleCreateChatroom():
     if 'userID' not in session:
@@ -156,13 +156,13 @@ def handleCreateChatroom():
         return error
     try:
         cursor, conn = quickCursor()
-        cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, session['userID']))
+        cursor.execute('INSERT INTO chatrooms (name, adminID) VALUES (?, ?)', (name, session['userID']))#after the chatroom is created it has the logged in user as the admin
         chatroomID = cursor.lastrowid
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
         chatroomIDs = result[0].split(',') if result[0] else []
         chatroomIDs.append(str(chatroomID))
-        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))#updates the users chatroom Id into the database
         cursor.execute(f'CREATE TABLE IF NOT EXISTS messages_{chatroomID} (id INTEGER PRIMARY KEY AUTOINCREMENT,userID INTEGER NOT NULL,message TEXT NOT NULL,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
         conn.commit()
         messageToAPI = jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": name,"isAdmin": True}})
@@ -174,7 +174,7 @@ def handleCreateChatroom():
         return error
     finally:
         quickClose(cursor,conn)
-
+# Allows a user to join an existing chatroom by ID.
 @app.route("/joinChatroom", methods=["POST"])
 def handleJoinChatroom():
     if 'userID' not in session:
@@ -196,10 +196,10 @@ def handleJoinChatroom():
         result = cursor.fetchone()
         chatroomIDs = result[0].split(',') if result[0] else []
         if str(chatroomID) in chatroomIDs:
-            error = jsonify({"problem": "Already in chatroom"})
+            error = jsonify({"problem": "Already in chatroom"})# Prevents joining a chatroom if already a member.
             return error
         chatroomIDs.append(str(chatroomID))
-        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))
+        cursor.execute('UPDATE users SET chatroomIDs = ? WHERE id = ?', (','.join(chatroomIDs), session['userID']))# Updates the user's chatroom Id in the database.
         conn.commit()
         messageToAPI = jsonify({"signal": "ok", "chatroom": {"id": chatroomID,"name": chatroom[0],"isAdmin": chatroom[1] == session['userID']}})
         return messageToAPI
@@ -210,7 +210,7 @@ def handleJoinChatroom():
         return error
     finally:
         quickClose(cursor,conn)
-
+# Allows a non-admin user to leave a chatroom.
 @app.route("/leaveChatroom/<int:chatroomID>", methods=["POST"])
 def handleLeaveChatroom(chatroomID):
     if 'userID' not in session:
@@ -225,7 +225,7 @@ def handleLeaveChatroom(chatroomID):
             error = jsonify({"problem": "Chatroom not found"})
             return error
         if result[0] == session['userID']:
-            error = jsonify({"problem": "Admins cannot leave chatroom"})
+            error = jsonify({"problem": "Admins cannot leave chatroom"})# Admins are prevented from leaving
             return error
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()

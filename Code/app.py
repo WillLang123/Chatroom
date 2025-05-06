@@ -13,22 +13,29 @@ def index():
 
 @app.route("/register", methods=["POST"])
 def register():
+    # Parse JSON
     dataFromAPI = request.get_json()
     username, password = dataFromAPI.get('username'), dataFromAPI.get('password')
+    # Check if user made input
     if not username or not password:
         error = jsonify({"problem": "Username and password are required"})
         return error
     try:
+        # Open a connection to the database
         cursor, conn = quickCursor()
         cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        # Check if username is already in the database
         if cursor.fetchone():
             error = jsonify({"problem": "Username already exists"})
             return error
+        # Push user entered username and password into database
         cursor.execute('INSERT INTO users (username, password, chatroomIDs) VALUES (?, ?, ?)', (username, password, ''))#test
         userID = cursor.lastrowid
         conn.commit()
+        # Saves user info in current session
         session['userID'] = userID
         session['username'] = username
+        # Return JSON response
         meessageToAPI = jsonify({"signal": "ok", "user": {"id": userID, "username": username}})
         return meessageToAPI
     except Exception:
@@ -37,27 +44,34 @@ def register():
         error = jsonify({"problem": "Failed to register user"})
         return error
     finally:
+        # Closes database connection after operations are complete
         quickClose(cursor,conn)
 
 @app.route("/login", methods=["POST"])
 def login():
     dataFromAPI = request.get_json()
+    # Take user input
     username, password = dataFromAPI.get('username'), dataFromAPI.get('password')
+    # Check if user made input
     if not username or not password:
         error = jsonify({"problem": "Username and password are required"})
         return error
     try:
         cursor, conn = quickCursor()
+        # Retrieve Username and password from database
         cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
+        # Check whether the username and password entered are in the database
         if not user:
             error = jsonify({"problem": "Invalid username or password"})
             return error
         if password != user[2]:
             error = jsonify({"problem": "Invalid username or password"})
             return error
+        # Logs user in current session if username and password were correctt
         session['userID'] = user[0]
         session['username'] = user[1]
+        # Return JSON Response
         messageToAPI = jsonify({"signal": "ok", "user": {"id": user[0], "username": user[1]}})
         return messageToAPI
     except Exception:
@@ -65,11 +79,13 @@ def login():
         error = jsonify({"problem": "Failed to log in"})
         return error
     finally:
+        # Closes database connection after operations are complete
         quickClose(cursor,conn)
 
 @app.route("/logout", methods=["POST"])
 def logout():
     try:
+        # Clears all session data
         session.clear()
         messageToAPI = jsonify({"signal": "ok"})
         return messageToAPI
@@ -81,9 +97,11 @@ def logout():
 @app.route("/checkLogin", methods=["GET"])
 def checkLogin():
     try:
+        # Checks whether user is logged in current session, if true then returns user info
         if 'userID' in session:
             messageToAPI = jsonify({"signal": "ok", "user": {"id": session["userID"], "username": session["username"]}})
             return messageToAPI
+        # Otherwise return not logged in
         error = jsonify({"problem": "Not logged in"})
         return error
     except Exception:
@@ -91,33 +109,27 @@ def checkLogin():
         error =jsonify({"problem": "Failed to check auth"})
         return error
 
-# The following function handles GET requests to /chatrooms
+# Handles GET requests to /chatrooms
 @app.route("/chatrooms", methods=["GET"])
 def getChatrooms():
-
     # If a userID is not found in session then return an error because the user is not logged in
     if 'userID' not in session:
         error = jsonify({"problem": "Not logged in"})
         return error
-    
     try:
         # Open a connection to the database
         cursor, conn = quickCursor()
-
         # Retrieve chatroom IDs from the database that are associated with the user
         cursor.execute('SELECT chatroomIDs FROM users WHERE id = ?', (session['userID'],))
         result = cursor.fetchone()
-
         # If there are no chatrooms associated with the user then return empty list
         if not result or not result[0]:
             messageToAPI = jsonify({"signal": "ok", "chatrooms": []})
-            return messageToAPI
-        
+            return messageToAPI 
         # Convert chatroom ID string into a list of integers
         chatroomIDs = []
         for id in result[0].split(','):
             chatroomIDs.append(int(id))
-
         # Retrieve chatroom details for each ID
         chatrooms = []
         for chatroomID in chatroomIDs:
@@ -129,20 +141,18 @@ def getChatrooms():
                     'name': chatroom[1],
                     'isAdmin': chatroom[2] == session['userID']
                 })
-
         # Return a JSON object with the list of chatrooms that the user is a part of
         messageToAPI = jsonify({"signal": "ok", "chatrooms": chatrooms})
-        return messageToAPI
-    
+        return messageToAPI    
     except Exception:
         # Handle errors
         print("Issue with getting user chatrooms")
         error = jsonify({"problem": "Failed to get chatrooms"})
-        return error
-    
+        return error   
     finally:
         # Closes database connection after operations are complete
         quickClose(cursor,conn)
+
 #Creates a new chatroom 
 @app.route("/createChatroom", methods=["POST"])
 def handleCreateChatroom():

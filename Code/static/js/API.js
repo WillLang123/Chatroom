@@ -7,7 +7,7 @@ const welcomeBackground = `<div class="welcomeBanner">
                                 <div>Either get a chatroom ID from someone else to join or just create a chatroom to message others.</div>
                             </div>`; // This is a welcome message tells that if no classroom is selected then to either get information to join one or to create your own.
 
-//=>, appendmessage/setupstream?
+//switches the login and register blocks on and off for display
 function registerMode(regBool){
     const loginPage = document.getElementById("loginPage");
     const registerPage = document.getElementById("registerPage");
@@ -31,7 +31,7 @@ function chatroomMode(chatBool){
         chatroomPage.style.display = "none";
     }
 }
-
+//Checks if user exists, and creates a new account and logins person in if not
 async function register(){
     const username = document.getElementById("registerUser").value;
     const password = document.getElementById("registerPW").value;
@@ -80,6 +80,7 @@ async function login(username=null, password=null){
 async function logout(){
     const response = await fetch("/logout", { method: "POST" });
     const dataFromServer = await response.json();
+    //Wipes all data about the user and closes messages streams
     if(Object.is(dataFromServer.signal,"ok")){
         chatroomMode(false);
         currentUserID = null;
@@ -537,7 +538,7 @@ function appendMessage(chatroomID, message){
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 }
-// Sanitize messages to prevent XSS attacks
+// Cleans messages to prevent weird rendering issues and potential security flaws
 function cleanMessage(unsafe){
     return unsafe
         .replace(/&/g, "&amp;")

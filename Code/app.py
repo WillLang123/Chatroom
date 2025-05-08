@@ -6,7 +6,7 @@ from utils import quickCursor, quickClose, createMessageTable, getChatroomByID
 app = Flask(__name__)
 app.secret_key = "COSC4360GP"
 
-#remove parameter function?
+#renders main page
 @app.route('/')
 def index():
     return render_template('mainPage.html')
@@ -308,6 +308,7 @@ def handleDeleteChatroom(chatroomID):
 
 @app.route("/chatroom/<int:chatroomID>/messages", methods=["GET"])
 def getChatroomMessages(chatroomID):
+    #Checks if user is logged in or an admin
     if 'userID' not in session:
         error = jsonify({"problem": "Not logged in"})
         return error
@@ -316,6 +317,7 @@ def getChatroomMessages(chatroomID):
         error = jsonify({"problem": "Not authorized"})
         return error
     try:
+        #creates the chatroom message table
         cursor, conn = quickCursor()
         createMessageTable(chatroomID)
         cursor.execute(f'SELECT m.id, m.userID, u.username, m.message, m.timestamp FROM messages_{chatroomID} m JOIN users u ON m.userID = u.id ORDER BY m.timestamp DESC LIMIT 50')
@@ -394,7 +396,7 @@ def streamMessages(chatroomID):
         lastID = 0
         while True:
             try:
-                #continuous tries to get ****
+                #continuous tries to get new messages from database
                 cursor, conn = quickCursor()
                 createMessageTable(chatroomID)
                 cursor.execute(f'SELECT m.id, m.userID, u.username, m.message, m.timestamp FROM messages_{chatroomID} m JOIN users u ON m.userID = u.id WHERE m.id > ? ORDER BY m.timestamp ASC', (lastID,))
@@ -421,6 +423,7 @@ def streamMessages(chatroomID):
 
 cursor, conn = quickCursor()
 try:
+    #Create user and chatroom database
     cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,chatroomIDs TEXT DEFAULT NULL)')
     cursor.execute('CREATE TABLE IF NOT EXISTS chatrooms (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,adminID INTEGER NOT NULL,FOREIGN KEY (adminID) REFERENCES users (id))')
     conn.commit()
@@ -430,4 +433,5 @@ except Exception as e:
     conn.rollback()
 finally:
     quickClose(cursor,conn)
+    #hosts website to port 3000 to show website
 app.run(host='0.0.0.0', port=3000, debug=True)

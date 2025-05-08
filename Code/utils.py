@@ -9,6 +9,9 @@ def quickClose(cursor, connection):
     cursor.close()
     connection.close()
 
+#quickly opens and closes sqlite3 cursors
+
+#makes message table
 def createMessageTable(chatroomID):
     cursor, conn = quickCursor()
     try:
@@ -21,6 +24,7 @@ def createMessageTable(chatroomID):
         quickClose(cursor, conn)
 
 def getChatroomByID(chatroomID):
+    #grabs chatroom data using its unique id
     try:
         cursor, conn = quickCursor()
         cursor.execute('SELECT id, name, adminID FROM chatrooms WHERE id = ?', (chatroomID,))
